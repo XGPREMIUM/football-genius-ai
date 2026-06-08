@@ -1,20 +1,24 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import os
+import sys
+import time
+import uuid
+from pathlib import Path
 
 import streamlit as st
 
-try:
-    from agent import FootballGeniusAgent
-    from prompts import MODE_DESCRIPTIONS, get_available_modes
-    from config import settings
-except ImportError:
-    import sys
-    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-    from agent import FootballGeniusAgent
-    from prompts import MODE_DESCRIPTIONS, get_available_modes
-    from config import settings
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+from agent import FootballGeniusAgent
+from prompts import MODE_DESCRIPTIONS, get_available_modes
+from config import settings
+from styles import CUSTOM_CSS, LIGHT_CSS
+from db import init_db, save_conversation, load_conversation, list_conversations, delete_conversation, search_players, search_teams, get_player, get_team, get_all_players, get_all_teams
+from seed_data import seed_database
+from suggestions import MODE_QUESTIONS
 
 
 st.set_page_config(
@@ -24,45 +28,90 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+init_db()
+seed_database()
+
 
 def init_session():
+    if "session_id" not in st.session_state:
+        st.session_state.session_id = str(uuid.uuid4())
     if "agent" not in st.session_state:
         st.session_state.agent = FootballGeniusAgent(mode="general")
     if "messages" not in st.session_state:
-        st.session_state.messages = []
+        loaded = load_conversation(st.session_state.session_id)
+        if loaded:
+            mode, msgs = loaded
+            st.session_state.agent.reset_mode(mode)
+            st.session_state.messages = msgs
+        else:
+            st.session_state.messages = []
     if "current_mode" not in st.session_state:
-        st.session_state.current_mode = "general"
-
-
-def run_async(coro):
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    return loop.run_until_complete(coro)
+        st.session_state.current_mode = st.session_state.agent.mode
+    if "dark_mode" not in st.session_state:
+        st.session_state.dark_mode = True
+    if "streaming" not in st.session_state:
+        st.session_state.streaming = False
 
 
 init_session()
 
+
+def save_messages():
+    save_conversation(
+        st.session_state.session_id,
+        st.session_state.current_mode,
+        st.session_state.messages,
+    )
+
+
+def new_conversation():
+    st.session_state.session_id = str(uuid.uuid4())
+    st.session_state.messages = []
+    save_messages()
+    st.rerun()
+
+
+def load_conversation_by_id(session_id: str):
+    loaded = load_conversation(session_id)
+    if loaded:
+        mode, msgs = loaded
+        st.session_state.session_id = session_id
+        st.session_state.messages = msgs
+        st.session_state.current_mode = mode
+        st.session_state.agent.reset_mode(mode)
+    st.rerun()
+
+
 # SIDEBAR
 with st.sidebar:
-    st.title("⚽ Football Genius AI")
-    st.caption("\"No hablamos de fútbol. Vivimos dentro del fútbol.\"")
+    st.markdown('<div style="text-align: center; padding: 8px 0;">', unsafe_allow_html=True)
+    st.markdown(
+        '<h1 style="font-size: 1.5rem; margin: 0;">⚽ Football Genius AI</h1>',
+        unsafe_allow_html=True,
+    )
+    st.markdown(
+        '<p style="font-size: 0.75rem; color: #8a9aa8; font-style: italic; margin: 0 0 8px 0;">'
+        '"No hablamos de fútbol. Vivimos dentro del fútbol."</p>',
+        unsafe_allow_html=True,
+    )
+    st.markdown('</div>', unsafe_allow_html=True)
 
     st.divider()
 
     st.subheader("Modo de análisis")
 
-    available_modes = get_available_modes()
     mode_options = {
         f"{icon} {name.replace('_', ' ').title()}": name
         for name, (icon, desc) in MODE_DESCRIPTIONS.items()
     }
 
+    current_index = list(mode_options.values()).index(st.session_state.current_mode) \
+        if st.session_state.current_mode in mode_options.values() else 0
+
     selected_label = st.selectbox(
         "Selecciona un modo:",
         options=list(mode_options.keys()),
-        index=list(mode_options.values()).index(
-            st.session_state.current_mode
-        ) if st.session_state.current_mode in mode_options.values() else 0,
+        index=current_index,
     )
 
     selected_mode = mode_options[selected_label]
@@ -70,36 +119,106 @@ with st.sidebar:
     if selected_mode != st.session_state.current_mode:
         st.session_state.current_mode = selected_mode
         st.session_state.agent.reset_mode(selected_mode)
-        st.session_state.messages = []
+        save_messages()
         st.rerun()
 
-    st.divider()
-
-    with st.expander("ℹ️ Modos disponibles", expanded=False):
-        for name, (icon, desc) in MODE_DESCRIPTIONS.items():
-            st.markdown(f"**{icon} {name.replace('_', ' ').title()}**: {desc}")
+    mode_icon, mode_desc = MODE_DESCRIPTIONS[st.session_state.current_mode]
+    st.caption(f"{mode_icon} {mode_desc}")
 
     st.divider()
 
-    if st.button("🗑️ Nueva conversación", use_container_width=True):
-        st.session_state.messages = []
-        st.rerun()
+    with st.expander("💡 Preguntas sugeridas", expanded=True):
+        questions = MODE_QUESTIONS.get(st.session_state.current_mode, MODE_QUESTIONS["general"])
+        for q in questions[:5]:
+            if st.button(q, use_container_width=True, type="secondary"):
+                st.session_state.pending_question = q
+                st.rerun()
 
     st.divider()
-    st.caption(f"Modelo: `{settings.openrouter_model or settings.openai_model or settings.anthropic_model}`")
-    st.caption(f"Proveedor: `{settings.ai_provider}`")
+
+    with st.expander("📁 Conversaciones", expanded=False):
+        col1, col2 = st.columns([3, 1])
+        with col1:
+            st.caption("Historial")
+        with col2:
+            if st.button("➕", help="Nueva conversación"):
+                new_conversation()
+
+        convos = list_conversations()
+        for conv in convos[:8]:
+            title = conv["title"] or "Sin título"
+            sid = conv["session_id"]
+            if st.button(f"💬 {title[:35]}...", key=f"conv_{sid}", use_container_width=True):
+                load_conversation_by_id(sid)
+
+    st.divider()
+
+    st.caption(f"🔧 **Modelo:** {settings.openrouter_model or settings.openai_model}")
+    st.caption(f"☁️ **Proveedor:** {settings.ai_provider}")
+
+    if st.button("🗑️ Nueva conversación", use_container_width=True, type="primary"):
+        new_conversation()
 
 
-# MAIN CHAT
-st.title("⚽ Football Genius AI")
+
+# MAIN AREA
+st.markdown(CUSTOM_CSS if st.session_state.dark_mode else LIGHT_CSS, unsafe_allow_html=True)
 
 mode_icon, mode_desc = MODE_DESCRIPTIONS.get(st.session_state.current_mode, ("", ""))
-st.caption(f"**Modo activo:** {mode_icon} **{st.session_state.current_mode.upper()}** — {mode_desc}")
+header_col1, header_col2 = st.columns([6, 1])
+with header_col1:
+    st.title("⚽ Football Genius AI")
+    st.markdown(
+        f'<span class="mode-indicator">{mode_icon} Modo: <b>{st.session_state.current_mode.upper()}</b> &nbsp;—&nbsp; {mode_desc}</span>',
+        unsafe_allow_html=True,
+    )
+with header_col2:
+    st.markdown("<br>", unsafe_allow_html=True)
+    if st.button("🌙" if st.session_state.dark_mode else "☀️", help="Toggle theme"):
+        st.session_state.dark_mode = not st.session_state.dark_mode
+        st.rerun()
 
-# Display messages
-for msg in st.session_state.messages:
-    with st.chat_message(msg["role"]):
-        st.markdown(msg["content"])
+# Chat messages
+chat_container = st.container()
+with chat_container:
+    for msg in st.session_state.messages:
+        with st.chat_message(msg["role"]):
+            st.markdown(msg["content"])
+
+    if st.session_state.get("pending_question"):
+        query = st.session_state.pending_question
+        st.session_state.pending_question = None
+
+        st.session_state.messages.append({"role": "user", "content": query})
+        with st.chat_message("user"):
+            st.markdown(query)
+
+        with st.chat_message("assistant"):
+            with st.spinner(""):
+                place = st.empty()
+                full_response = ""
+                try:
+                    async def stream_and_collect():
+                        result = ""
+                        async for chunk in st.session_state.agent.ask_stream(query, st.session_state.messages[:-1]):
+                            result += chunk
+                            place.markdown(result + "▌")
+                        return result
+
+                    full_response = asyncio.run(stream_and_collect())
+                    place.markdown(full_response)
+                except Exception as e:
+                    try:
+                        full_response = asyncio.run(
+                            st.session_state.agent.ask(query, st.session_state.messages[:-1])
+                        )
+                        place.markdown(full_response)
+                    except Exception as e2:
+                        place.error(f"Error: {e2}")
+
+        st.session_state.messages.append({"role": "assistant", "content": full_response})
+        save_messages()
+        st.rerun()
 
 # Chat input
 if prompt := st.chat_input("Pregúntame sobre fútbol..."):
@@ -108,9 +227,34 @@ if prompt := st.chat_input("Pregúntame sobre fútbol..."):
         st.markdown(prompt)
 
     with st.chat_message("assistant"):
-        with st.spinner("Analizando..."):
-            response = run_async(
-                st.session_state.agent.ask(prompt)
-            )
-        st.markdown(response)
-        st.session_state.messages.append({"role": "assistant", "content": response})
+        with st.spinner(""):
+            place = st.empty()
+            full_response = ""
+            try:
+                async def stream_and_collect():
+                    result = ""
+                    async for chunk in st.session_state.agent.ask_stream(prompt, st.session_state.messages[:-1]):
+                        result += chunk
+                        place.markdown(result + "▌")
+                    return result
+
+                full_response = asyncio.run(stream_and_collect())
+                place.markdown(full_response)
+            except Exception as e:
+                try:
+                    full_response = asyncio.run(
+                        st.session_state.agent.ask(prompt, st.session_state.messages[:-1])
+                    )
+                    place.markdown(full_response)
+                except Exception as e2:
+                    place.error(f"Error: {e2}")
+
+    st.session_state.messages.append({"role": "assistant", "content": full_response})
+    save_messages()
+    st.rerun()
+
+# Footer
+st.markdown(
+    '<div class="footer">⚽ Football Genius AI — La inteligencia artificial del fútbol mundial</div>',
+    unsafe_allow_html=True,
+)
