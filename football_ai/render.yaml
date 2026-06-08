@@ -3,7 +3,7 @@ services:
     name: football-genius-ai
     runtime: python
     buildCommand: pip install -r requirements-deploy.txt
-    startCommand: streamlit run streamlit_app.py --server.port $PORT --server.address 0.0.0.0
+    startCommand: uvicorn combined_app:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: AI_PROVIDER
         value: openrouter
