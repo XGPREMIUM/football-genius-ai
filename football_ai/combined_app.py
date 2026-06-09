@@ -4,7 +4,6 @@ import asyncio
 import logging
 import os
 import sys
-import threading
 
 import httpx
 import uvicorn
@@ -18,8 +17,8 @@ from db import init_db
 from prompts import MODE_DESCRIPTIONS, get_available_modes
 from seed_data import seed_database
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 PORT = int(os.environ.get("PORT", 10000))
 STREAMLIT_PORT = PORT + 1
@@ -37,16 +36,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-streamlit_ready = threading.Event()
 
+@app.on_event("startup")
+async def startup():
+    streamlit_dir = os.path.dirname(os.path.abspath(__file__))
+    streamlit_script = os.path.join(streamlit_dir, "streamlit_app.py")
 
-def start_streamlit():
-    from streamlit.web import cli as st_cli
-
-    sys.argv = [
+    proc = await asyncio.create_subprocess_exec(
+        sys.executable,
+        "-m",
         "streamlit",
         "run",
-        os.path.join(os.path.dirname(__file__), "streamlit_app.py"),
+        streamlit_script,
         "--server.port",
         str(STREAMLIT_PORT),
         "--server.headless",
@@ -59,30 +60,33 @@ def start_streamlit():
         "false",
         "--global.developmentMode",
         "false",
-    ]
-    try:
-        st_cli.main()
-    except SystemExit:
-        pass
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE,
+    )
+    app.state.streamlit_proc = proc
 
+    async def log_stream(stream, label):
+        while True:
+            line = await stream.readline()
+            if not line:
+                break
+            logger.info(f"[{label}] {line.decode().strip()}")
 
-threading.Thread(target=start_streamlit, daemon=True).start()
+    asyncio.create_task(log_stream(proc.stdout, "Streamlit"))
+    asyncio.create_task(log_stream(proc.stderr, "Streamlit:err"))
 
-
-@app.on_event("startup")
-async def wait_for_streamlit():
     for i in range(30):
         try:
-            async with httpx.AsyncClient() as c:
+            async with httpx.AsyncClient(timeout=2) as c:
                 r = await c.get(f"http://127.0.0.1:{STREAMLIT_PORT}")
                 if r.status_code < 500:
-                    streamlit_ready.set()
-                    logger.info(f"Streamlit ready on port {STREAMLIT_PORT}")
+                    logger.info(f"Streamlit ready on {STREAMLIT_PORT}")
                     return
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug(f"Waiting Streamlit ({i}): {e}")
         await asyncio.sleep(1)
-    logger.warning("Streamlit did not become ready, proxy will retry on each request")
+
+    logger.error("Streamlit did not start in 30s")
 
 
 @app.post("/ask")
@@ -110,8 +114,6 @@ client = httpx.AsyncClient(timeout=300)
     methods=["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"],
 )
 async def proxy_http(request: Request, path: str):
-    if not streamlit_ready.is_set():
-        return JSONResponse({"error": "Streamlit still starting, retry in a few seconds"}, status_code=503)
     url = (
         f"http://127.0.0.1:{STREAMLIT_PORT}"
         if not path
@@ -127,6 +129,7 @@ async def proxy_http(request: Request, path: str):
             headers=dict(resp.headers),
         )
     except Exception as e:
+        logger.error(f"Proxy error for {path}: {e}")
         return JSONResponse({"error": f"Proxy error: {e}"}, status_code=502)
 
 
@@ -159,6 +162,7 @@ async def proxy_ws(websocket: WebSocket, path: str):
     except ImportError:
         await websocket.close(1011, "WebSocket proxy unavailable (websockets not installed)")
     except Exception as e:
+        logger.error(f"WS proxy error for {path}: {e}")
         await websocket.close(1011, str(e))
 
 
