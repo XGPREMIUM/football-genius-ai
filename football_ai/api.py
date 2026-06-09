@@ -28,7 +28,10 @@ class QueryResponse(BaseModel):
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global agent
-    seed_database()
+    try:
+        seed_database()
+    except Exception:
+        pass  # DB may not be available (e.g. Vercel serverless)
     agent = FootballGeniusAgent(mode=settings.default_mode)
     yield
 
