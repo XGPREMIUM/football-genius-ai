@@ -1,6 +1,6 @@
 import { QueryRequest, QueryResponse } from '../types';
 
-const API_URL = 'https://football-genius-ai.onrender.com';
+const API_URL = 'https://football-genius-ai.vercel.app/api/index';
 
 export async function askQuestion(request: QueryRequest): Promise<QueryResponse> {
   const response = await fetch(`${API_URL}/ask`, {

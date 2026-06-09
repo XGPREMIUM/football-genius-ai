@@ -1,18 +1,4 @@
-from fastapi import FastAPI
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-app = FastAPI(title="Football Genius API")
-
-
-@app.get("/")
-async def root():
-    return {"name": "Football Genius AI", "status": "ok"}
-
-
-@app.get("/modes")
-async def list_modes():
-    return {"modes": ["general", "scout", "tactical", "goat"]}
-
-
-@app.post("/ask")
-async def ask():
-    return {"response": "Funciona en Vercel!", "mode": "general"}
+from football_ai.api import app
