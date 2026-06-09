@@ -12,12 +12,14 @@ from fastapi.responses import JSONResponse, StreamingResponse
 
 from agent import FootballGeniusAgent
 from config import settings
+from db import init_db
 from prompts import MODE_DESCRIPTIONS, get_available_modes
 from seed_data import seed_database
 
 PORT = int(os.environ.get("PORT", 10000))
 STREAMLIT_PORT = PORT + 1
 
+init_db()
 seed_database()
 agent = FootballGeniusAgent(mode=settings.default_mode)
 
