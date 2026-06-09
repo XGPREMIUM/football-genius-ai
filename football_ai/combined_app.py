@@ -1,8 +1,11 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 import os
 import sys
+import threading
+import time
 
 import httpx
 import uvicorn
@@ -15,6 +18,9 @@ from config import settings
 from db import init_db
 from prompts import MODE_DESCRIPTIONS, get_available_modes
 from seed_data import seed_database
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 PORT = int(os.environ.get("PORT", 10000))
 STREAMLIT_PORT = PORT + 1
@@ -31,6 +37,53 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+streamlit_ready = threading.Event()
+
+
+def start_streamlit():
+    from streamlit.web import cli as st_cli
+
+    sys.argv = [
+        "streamlit",
+        "run",
+        os.path.join(os.path.dirname(__file__), "streamlit_app.py"),
+        "--server.port",
+        str(STREAMLIT_PORT),
+        "--server.headless",
+        "true",
+        "--server.address",
+        "0.0.0.0",
+        "--server.enableCORS",
+        "false",
+        "--server.enableXsrfProtection",
+        "false",
+        "--global.developmentMode",
+        "false",
+    ]
+    try:
+        st_cli.main()
+    except SystemExit:
+        pass
+
+
+threading.Thread(target=start_streamlit, daemon=True).start()
+
+
+@app.on_event("startup")
+async def wait_for_streamlit():
+    for i in range(30):
+        try:
+            async with httpx.AsyncClient() as c:
+                r = await c.get(f"http://127.0.0.1:{STREAMLIT_PORT}")
+                if r.status_code < 500:
+                    streamlit_ready.set()
+                    logger.info(f"Streamlit ready on port {STREAMLIT_PORT}")
+                    return
+        except Exception:
+            pass
+        await asyncio.sleep(1)
+    logger.warning("Streamlit did not become ready, proxy will retry on each request")
 
 
 @app.post("/ask")
@@ -53,37 +106,13 @@ async def list_modes():
 client = httpx.AsyncClient(timeout=300)
 
 
-@app.on_event("startup")
-async def startup():
-    proc = await asyncio.create_subprocess_exec(
-        sys.executable,
-        "-m",
-        "streamlit",
-        "run",
-        os.path.join(os.path.dirname(__file__), "streamlit_app.py"),
-        "--server.port",
-        str(STREAMLIT_PORT),
-        "--server.headless",
-        "true",
-        "--server.address",
-        "0.0.0.0",
-        "--server.enableCORS",
-        "false",
-        "--server.enableXsrfProtection",
-        "false",
-        "--global.developmentMode",
-        "false",
-        stdout=asyncio.subprocess.DEVNULL,
-        stderr=asyncio.subprocess.DEVNULL,
-    )
-    app.state.streamlit_proc = proc
-
-
 @app.api_route(
     "/{path:path}",
     methods=["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"],
 )
 async def proxy_http(request: Request, path: str):
+    if not streamlit_ready.is_set():
+        return JSONResponse({"error": "Streamlit still starting, retry in a few seconds"}, status_code=503)
     url = (
         f"http://127.0.0.1:{STREAMLIT_PORT}"
         if not path
