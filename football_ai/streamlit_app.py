@@ -173,8 +173,29 @@ with st.sidebar:
         for conv in convos[:8]:
             title = conv["title"] or "Sin título"
             sid = conv["session_id"]
-            if st.button(f"💬 {title[:35]}...", key=f"conv_{sid}", use_container_width=True):
-                load_conversation_by_id(sid)
+            cols = st.columns([4, 1])
+            with cols[0]:
+                if st.button(f"💬 {title[:30]}...", key=f"conv_{sid}", use_container_width=True):
+                    load_conversation_by_id(sid)
+            with cols[1]:
+                if st.button("✕", key=f"del_{sid}", help="Eliminar"):
+                    delete_conversation(sid)
+                    st.rerun()
+
+    st.divider()
+
+    if st.session_state.messages:
+        chat_text = "\n\n".join(
+            f"**{m['role'].upper()}:** {m['content']}"
+            for m in st.session_state.messages
+        )
+        st.download_button(
+            "📥 Exportar chat",
+            data=chat_text,
+            file_name=f"football-genius-{st.session_state.session_id[:8]}.md",
+            mime="text/markdown",
+            use_container_width=True,
+        )
 
     st.divider()
 

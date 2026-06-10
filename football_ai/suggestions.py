@@ -5,6 +5,8 @@ MODE_QUESTIONS: dict[str, list[str]] = {
         "¿Cuál fue el mejor partido de la historia del fútbol?",
         "Analiza la evolución táctica del fútbol en los últimos 30 años",
         "¿Quién ganará el próximo Mundial?",
+        "¿Cuál es la mejor cantera del mundo actualmente?",
+        "¿Qué jugador mereció un Balón de Oro y nunca lo ganó?",
     ],
     "scout": [
         "Analiza a Lamine Yamal como proyecto de futuro",
@@ -12,6 +14,8 @@ MODE_QUESTIONS: dict[str, list[str]] = {
         "¿Quiénes son las 5 mayores promesas del fútbol mundial?",
         "Analiza a Endrick y su potencial en el Real Madrid",
         "Busca jugadores infravalorados en la Serie A",
+        "Perfil de Florian Wirtz: estilo, proyección y valor de mercado",
+        "¿Qué jugador joven de la Bundesliga debería fichar el Barça?",
     ],
     "tactical": [
         "Analiza el 4-3-3 de Guardiola vs el 4-4-2 de Simeone",
@@ -19,6 +23,8 @@ MODE_QUESTIONS: dict[str, list[str]] = {
         "Explica el pressing de Klopp vs la defensa baja de Mourinho",
         "¿Qué es un 'box midfield' y cómo funciona?",
         "Analiza la salida de balón del FC Barcelona 2024-25",
+        "¿Cómo se defiende un 3-5-2? Debilidades y fortalezas",
+        "Explica la figura del lateral invertido con ejemplos actuales",
     ],
     "sporting_director": [
         "Diagnóstico deportivo del Manchester United 2025",
@@ -26,6 +32,8 @@ MODE_QUESTIONS: dict[str, list[str]] = {
         "Evalúa la planificación deportiva del Real Madrid",
         "¿Cómo debe construir un proyecto un equipo recién ascendido?",
         "Análisis de la cantera del Ajax vs La Masia",
+        "¿Cómo gestionar el fair play financiero en un club de élite?",
+        "Estrategia de renovaciones: ¿a quién renovar y a quién vender?",
     ],
     "transfer_market": [
         "¿Qué fichajes necesita el Real Madrid para 2025-26?",
@@ -33,6 +41,8 @@ MODE_QUESTIONS: dict[str, list[str]] = {
         "¿Quién debería ser el reemplazo de Lewandowski en el Barça?",
         "Agentes libres top para 2025",
         "Jóvenes talentos por menos de 20M",
+        "Caso práctico: reconstruye al AC Milan con 100M de presupuesto",
+        "¿Qué jugadores han bajado su valor y son oportunidad de mercado?",
     ],
     "journalist": [
         "Escribe una crónica de la final de Champions 2024",
@@ -40,6 +50,8 @@ MODE_QUESTIONS: dict[str, list[str]] = {
         "Columna de opinión: ¿El VAR mejora o empeora el fútbol?",
         "Entrevista ficticia a Johan Cruyff",
         "Previa del próximo Clásico Real Madrid vs Barcelona",
+        "Análisis post-partido: cómo el City eliminó al Madrid en 2024",
+        "Perfil biográfico: la historia de superación de Roberto Baggio",
     ],
     "statistician": [
         "Compara las estadísticas de Messi y Ronaldo en su prime",
@@ -47,6 +59,8 @@ MODE_QUESTIONS: dict[str, list[str]] = {
         "Los 10 récords más impresionantes del fútbol",
         "Analiza las métricas de Rodri en la 2023-24",
         "¿Qué equipo tiene la mejor eficiencia goleadora de Europa?",
+        "¿Qué jugador tiene el mejor ratio gol/minuto de la historia?",
+        "Comparativa de posesión: Guardiola vs sus imitadores",
     ],
     "goat": [
         "Messi vs Maradona: ¿quién fue mejor?",
@@ -54,6 +68,8 @@ MODE_QUESTIONS: dict[str, list[str]] = {
         "Los 5 mejores entrenadores de la historia",
         "¿Quién es el mejor centrocampista de la historia?",
         "Top 10 defensas de todos los tiempos",
+        "¿Quién es el mejor portero de la historia?",
+        "Maldini vs Beckenbauer vs Ramos: defensa total",
     ],
     "encyclopedia": [
         "Lista completa de todos los campeones del Mundo",
@@ -61,6 +77,8 @@ MODE_QUESTIONS: dict[str, list[str]] = {
         "Máximos goleadores históricos del fútbol",
         "Todos los campeones de la Champions League por año",
         "Récords imbatibles del fútbol mundial",
+        "Historia de las Copas América: todos los campeones",
+        "Evolución del Balón de Oro: desde 1956 hasta hoy",
     ],
     "content_creator": [
         "Crea un hilo de X sobre la historia del 4-3-3",
@@ -68,6 +86,8 @@ MODE_QUESTIONS: dict[str, list[str]] = {
         "Post de LinkedIn: lecciones de liderazgo del fútbol",
         "Newsletter semanal: lo mejor de la jornada europea",
         "Guión para un short sobre el mejor gol de la historia",
+        "Crea un meme textual sobre la defensa del Real Madrid",
+        "Titulares clickbait para un video sobre Haaland vs Mbappé",
     ],
     "coach": [
         "Diseña una sesión de entrenamiento de posesión para juveniles",
@@ -75,6 +95,8 @@ MODE_QUESTIONS: dict[str, list[str]] = {
         "Ejercicios para mejorar la salida de balón bajo presión",
         "Planificación de pretemporada para fútbol base",
         "Cómo entrenar la presión post-pérdida",
+        "Ejercicios de finalización para delanteros",
+        "¿Cómo corregir a un jugador que pierde la posición defensiva?",
     ],
     "talent_detector": [
         "Joyas ocultas del fútbol sudamericano",
@@ -82,5 +104,7 @@ MODE_QUESTIONS: dict[str, list[str]] = {
         "Talento emergente en la Liga Portuguesa",
         "¿Qué jugadores sub-20 serán estrellas mundiales en 2030?",
         "Mercados emergentes: talento en la MLS y Asia",
+        "¿Qué jugador de la cantera del Barça será el próximo en explotar?",
+        "Perfiles infravalorados: jugadores TOP en ligas secundarias",
     ],
 }

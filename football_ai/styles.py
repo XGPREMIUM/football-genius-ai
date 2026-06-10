@@ -13,7 +13,13 @@ CUSTOM_CSS = """
 
     [data-testid="stChatMessage"] {
         border-radius: 12px;
-        padding: 8px;
+        padding: 12px 16px;
+        animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(8px); }
+        to { opacity: 1; transform: translateY(0); }
     }
 
     /* User message */
@@ -38,10 +44,21 @@ CUSTOM_CSS = """
         color: #e0e8f0;
     }
 
+    /* Sidebar button styling */
+    [data-testid="stSidebar"] .stButton button {
+        font-size: 0.8rem;
+        padding: 4px 8px;
+        min-height: 30px;
+    }
+
     /* Headers */
     h1, h2, h3 {
         color: #ffd700 !important;
         font-weight: 700 !important;
+    }
+
+    .stApp h1 {
+        font-size: clamp(1.2rem, 4vw, 2rem) !important;
     }
 
     /* Buttons */
@@ -52,11 +69,27 @@ CUSTOM_CSS = """
         border: none !important;
         border-radius: 8px !important;
         transition: all 0.3s ease;
+        font-size: 0.85rem;
     }
 
     .stButton button:hover {
         transform: translateY(-2px);
         box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+    }
+
+    .stButton button:active {
+        transform: translateY(0);
+    }
+
+    /* Secondary buttons */
+    .stButton button[kind="secondary"] {
+        background: transparent !important;
+        color: #ffd700 !important;
+        border: 1px solid #ffd700 !important;
+    }
+
+    .stButton button[kind="secondary"]:hover {
+        background: rgba(255, 215, 0, 0.1) !important;
     }
 
     /* Select box */
@@ -73,6 +106,7 @@ CUSTOM_CSS = """
     /* Dividers */
     hr {
         border-color: #1a3a5a !important;
+        margin: 12px 0 !important;
     }
 
     /* Chat input */
@@ -80,11 +114,12 @@ CUSTOM_CSS = """
         border: 1px solid #2d4a6a !important;
         border-radius: 12px !important;
         background: #1a2a3a !important;
+        transition: border-color 0.3s ease;
     }
 
     [data-testid="stChatInput"]:focus {
         border-color: #ffd700 !important;
-        box-shadow: 0 0 10px rgba(255, 215, 0, 0.1);
+        box-shadow: 0 0 10px rgba(255, 215, 0, 0.15);
     }
 
     /* Captions */
@@ -97,6 +132,12 @@ CUSTOM_CSS = """
         background: #1a2a3a;
         border: 1px solid #2d4a6a;
         border-radius: 8px;
+        margin: 8px 0;
+    }
+
+    [data-testid="stExpander"] details summary {
+        font-size: 0.85rem;
+        font-weight: 600;
     }
 
     /* Status */
@@ -109,12 +150,13 @@ CUSTOM_CSS = """
         background: #1a2a3a !important;
         border: 1px solid #2d4a6a !important;
         color: #e0e8f0 !important;
+        border-radius: 8px !important;
     }
 
     /* Scrollbar */
     ::-webkit-scrollbar {
-        width: 8px;
-        height: 8px;
+        width: 6px;
+        height: 6px;
     }
 
     ::-webkit-scrollbar-track {
@@ -123,7 +165,7 @@ CUSTOM_CSS = """
 
     ::-webkit-scrollbar-thumb {
         background: #2d4a6a;
-        border-radius: 4px;
+        border-radius: 3px;
     }
 
     ::-webkit-scrollbar-thumb:hover {
@@ -135,7 +177,7 @@ CUSTOM_CSS = """
         background: #1a2a3a;
         border: 1px solid #2d4a6a;
         border-radius: 8px;
-        padding: 8px;
+        padding: 12px;
     }
 
     [data-testid="stMetric"] label {
@@ -150,10 +192,10 @@ CUSTOM_CSS = """
     .footer {
         text-align: center;
         color: #4a5a6a;
-        font-size: 0.75rem;
-        padding: 20px 0 10px 0;
+        font-size: 0.7rem;
+        padding: 16px 0 8px 0;
         border-top: 1px solid #1a3a5a;
-        margin-top: 30px;
+        margin-top: 24px;
     }
 
     /* Badge */
@@ -177,8 +219,66 @@ CUSTOM_CSS = """
         border: 1px solid #2d4a6a;
         border-radius: 20px;
         padding: 4px 12px;
-        font-size: 0.8rem;
+        font-size: 0.75rem;
         color: #e0e8f0;
+    }
+
+    /* Download button */
+    .stDownloadButton button {
+        background: linear-gradient(135deg, #2d4a6a, #1a3a5a) !important;
+        color: #e0e8f0 !important;
+        border: 1px solid #3a5a7a !important;
+        font-size: 0.8rem !important;
+    }
+
+    /* Mobile responsive */
+    @media (max-width: 768px) {
+        .stApp h1 {
+            font-size: 1.1rem !important;
+        }
+        [data-testid="stSidebar"] {
+            min-width: 200px !important;
+            max-width: 280px !important;
+        }
+        [data-testid="stChatMessage"] {
+            padding: 8px 12px !important;
+        }
+        .mode-indicator {
+            font-size: 0.65rem !important;
+            padding: 2px 8px !important;
+        }
+    }
+
+    /* Image avatars in chat */
+    [data-testid="chatAvatarIcon-user"] {
+        background: linear-gradient(135deg, #2d5a3d, #1a3a2a) !important;
+    }
+
+    [data-testid="chatAvatarIcon-assistant"] {
+        background: linear-gradient(135deg, #ffd700, #ffaa00) !important;
+        color: #0a1628 !important;
+    }
+
+    /* Radio buttons */
+    [data-testid="stRadio"] label {
+        color: #e0e8f0 !important;
+    }
+
+    /* Text input for search */
+    [data-testid="stTextInput"] input {
+        background: #1a2a3a !important;
+        border: 1px solid #2d4a6a !important;
+        border-radius: 8px !important;
+        color: #e0e8f0 !important;
+    }
+
+    [data-testid="stTextInput"] input:focus {
+        border-color: #ffd700 !important;
+    }
+
+    /* Columns in sidebar for conv buttons */
+    [data-testid="stSidebar"] [data-testid="column"] {
+        padding: 0 2px !important;
     }
 </style>
 """
