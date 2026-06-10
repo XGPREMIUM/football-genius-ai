@@ -10,13 +10,15 @@ from pathlib import Path
 
 import streamlit as st
 
-from football_ai.agent import FootballGeniusAgent
-from football_ai.prompts import MODE_DESCRIPTIONS, get_available_modes
-from football_ai.config import settings
-from football_ai.styles import CUSTOM_CSS, LIGHT_CSS
-from football_ai.db import init_db, save_conversation, load_conversation, list_conversations, delete_conversation, search_players, search_teams, get_player, get_team, get_all_players, get_all_teams
-from football_ai.seed_data import seed_database
-from football_ai.suggestions import MODE_QUESTIONS
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+from agent import FootballGeniusAgent
+from prompts import MODE_DESCRIPTIONS, get_available_modes
+from config import settings
+from styles import CUSTOM_CSS, LIGHT_CSS
+from db import init_db, save_conversation, load_conversation, list_conversations, delete_conversation, search_players, search_teams, get_player, get_team, get_all_players, get_all_teams
+from seed_data import seed_database
+from suggestions import MODE_QUESTIONS
 
 
 st.set_page_config(
