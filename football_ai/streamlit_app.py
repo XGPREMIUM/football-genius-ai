@@ -136,6 +136,31 @@ with st.sidebar:
 
     st.divider()
 
+    with st.expander("🔍 Buscar jugador/equipo", expanded=False):
+        search_type = st.radio("Tipo", ["Jugador", "Equipo"], horizontal=True, label_visibility="collapsed")
+        search_q = st.text_input("Buscar...", placeholder="Messi, Real Madrid...", label_visibility="collapsed")
+        if search_q:
+            if search_type == "Jugador":
+                results = search_players(search_q)
+                for p in results[:8]:
+                    with st.container():
+                        st.markdown(f"**{p['name']}**")
+                        st.caption(f"{p['nationality']} | {p['position']} | {p.get('current_club', 'Sin club') or 'Sin club'}")
+                        if st.button(f"ℹ️ Info", key=f"info_{p['name']}", use_container_width=True):
+                            st.session_state.pending_question = f"Cuéntame todo sobre {p['name']}"
+                            st.rerun()
+            else:
+                results = search_teams(search_q)
+                for t in results[:8]:
+                    with st.container():
+                        st.markdown(f"**{t['name']}**")
+                        st.caption(f"{t['country']} | {t.get('league', '')}")
+                        if st.button(f"ℹ️ Info", key=f"info_team_{t['name']}", use_container_width=True):
+                            st.session_state.pending_question = f"Cuéntame todo sobre {t['name']}"
+                            st.rerun()
+
+    st.divider()
+
     with st.expander("📁 Conversaciones", expanded=False):
         col1, col2 = st.columns([3, 1])
         with col1:
