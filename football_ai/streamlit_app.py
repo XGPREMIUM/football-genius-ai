@@ -161,6 +161,16 @@ with st.sidebar:
 
     st.divider()
 
+    with st.expander("⚔️ Comparar", expanded=False):
+        compare_a = st.text_input("Primero", placeholder="Jugador A", key="cmp_a", label_visibility="collapsed")
+        compare_b = st.text_input("Segundo", placeholder="Jugador B", key="cmp_b", label_visibility="collapsed")
+        if compare_a and compare_b:
+            if st.button("Comparar", use_container_width=True):
+                st.session_state.pending_question = f"Compara en detalle a {compare_a} vs {compare_b}. Dame un análisis completo con estadísticas, logros, estilos de juego, y un veredicto final."
+                st.rerun()
+
+    st.divider()
+
     with st.expander("📁 Conversaciones", expanded=False):
         col1, col2 = st.columns([3, 1])
         with col1:
@@ -185,10 +195,19 @@ with st.sidebar:
     st.divider()
 
     if st.session_state.messages:
-        chat_text = "\n\n".join(
-            f"**{m['role'].upper()}:** {m['content']}"
-            for m in st.session_state.messages
-        )
+        timestamp = time.strftime("%Y-%m-%d %H:%M")
+        mode_name = st.session_state.current_mode
+        chat_lines = [
+            f"# Football Genius AI — Conversación",
+            f"**Modo:** {mode_name}  |  **Fecha:** {timestamp}",
+            f"---",
+        ]
+        for m in st.session_state.messages:
+            role = "🤔 Tú" if m["role"] == "user" else "🧠 Football Genius AI"
+            chat_lines.append(f"### {role}")
+            chat_lines.append(m["content"])
+            chat_lines.append("")
+        chat_text = "\n".join(chat_lines)
         st.download_button(
             "📥 Exportar chat",
             data=chat_text,
