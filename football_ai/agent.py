@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import AsyncIterator
 
-from football_ai.config import settings
-from football_ai.prompts import build_system_prompt
+from config import settings
+from prompts import build_system_prompt
 
 
 class FootballGeniusAgent:

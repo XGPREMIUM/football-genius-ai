@@ -6,10 +6,10 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from football_ai.agent import FootballGeniusAgent
-from football_ai.config import settings
-from football_ai.seed_data import seed_database
-from football_ai.prompts import MODE_DESCRIPTIONS, get_available_modes
+from agent import FootballGeniusAgent
+from config import settings
+from seed_data import seed_database
+from prompts import MODE_DESCRIPTIONS, get_available_modes
 
 agent = FootballGeniusAgent(mode=settings.default_mode)
 

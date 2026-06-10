@@ -1,1 +1,4 @@
-from football_ai.api import app
+import os, sys
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "football_ai"))
+
+from football_ai.api import app  # noqa: E402
