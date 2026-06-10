@@ -1,4 +1,4 @@
-from db import get_connection
+from football_ai.db import get_connection
 
 
 PLAYERS = [

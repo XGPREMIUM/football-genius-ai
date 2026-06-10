@@ -13,9 +13,9 @@ from rich.prompt import Prompt
 from rich.table import Table
 from rich.text import Text
 
-from agent import FootballGeniusAgent
-from config import settings
-from prompts import MODE_DESCRIPTIONS, get_available_modes
+from football_ai.agent import FootballGeniusAgent
+from football_ai.config import settings
+from football_ai.prompts import MODE_DESCRIPTIONS, get_available_modes
 
 console = Console()
 app = typer.Typer(help="FOOTBALL GENIUS AI — La inteligencia artificial del fútbol mundial", no_args_is_help=True)
@@ -145,7 +145,7 @@ def modes():
 @app.command()
 def serve():
     """Inicia el servidor API REST"""
-    from api import run_server
+    from football_ai.api import run_server
     run_server()
 
 
