@@ -156,12 +156,18 @@ def save_conversation(session_id: str, mode: str, messages: list[dict]):
         if m["role"] == "user":
             first_user_msg = m["content"][:80]
             break
-    cursor.execute(
-        """INSERT INTO conversations (session_id, mode, title, messages)
-           VALUES (?, ?, ?, ?)
-           ON CONFLICT(session_id) DO UPDATE SET mode=?, messages=?, updated_at=CURRENT_TIMESTAMP""",
-        (session_id, mode, first_user_msg, data, mode, data),
-    )
+    cursor.execute("SELECT id FROM conversations WHERE session_id = ?", (session_id,))
+    existing = cursor.fetchone()
+    if existing:
+        cursor.execute(
+            "UPDATE conversations SET mode=?, title=?, messages=?, updated_at=CURRENT_TIMESTAMP WHERE session_id=?",
+            (mode, first_user_msg, data, session_id),
+        )
+    else:
+        cursor.execute(
+            "INSERT INTO conversations (session_id, mode, title, messages) VALUES (?, ?, ?, ?)",
+            (session_id, mode, first_user_msg, data),
+        )
     conn.commit()
     conn.close()
 
