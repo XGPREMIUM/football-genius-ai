@@ -7,6 +7,8 @@ MODE_QUESTIONS: dict[str, list[str]] = {
         "¿Quién ganará el próximo Mundial?",
         "¿Cuál es la mejor cantera del mundo actualmente?",
         "¿Qué jugador mereció un Balón de Oro y nunca lo ganó?",
+        "Cuéntame la historia del RC Celta de Vigo y su importancia en Galicia",
+        "¿Quién es Iago Aspas y por qué es leyenda del Celta?",
     ],
     "scout": [
         "Analiza a Lamine Yamal como proyecto de futuro",
@@ -16,6 +18,7 @@ MODE_QUESTIONS: dict[str, list[str]] = {
         "Busca jugadores infravalorados en la Serie A",
         "Perfil de Florian Wirtz: estilo, proyección y valor de mercado",
         "¿Qué jugador joven de la Bundesliga debería fichar el Barça?",
+        "Scout report de Iago Aspas: ¿por qué es tan infravalorado fuera de España?",
     ],
     "tactical": [
         "Analiza el 4-3-3 de Guardiola vs el 4-4-2 de Simeone",
