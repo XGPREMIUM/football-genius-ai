@@ -19,6 +19,7 @@ from styles import CUSTOM_CSS, LIGHT_CSS
 from db import init_db, save_conversation, load_conversation, list_conversations, delete_conversation, search_players, search_teams, get_player, get_team, get_all_players, get_all_teams
 from seed_data import seed_database
 from suggestions import MODE_QUESTIONS
+from rankings import get_player_ranking, get_top_teams, TOP_PLAYERS_CATEGORIES
 
 
 st.set_page_config(
@@ -168,6 +169,29 @@ with st.sidebar:
             if st.button("Comparar", use_container_width=True):
                 st.session_state.pending_question = f"Compara en detalle a {compare_a} vs {compare_b}. Dame un análisis completo con estadísticas, logros, estilos de juego, y un veredicto final."
                 st.rerun()
+
+    st.divider()
+
+    with st.expander("🏆 Rankings", expanded=False):
+        rank_type = st.radio("Ver", ["Jugadores", "Equipos"], horizontal=True, label_visibility="collapsed")
+        if rank_type == "Jugadores":
+            ranking = get_player_ranking()
+            cat = st.selectbox("Categoría", ["General"] + list(TOP_PLAYERS_CATEGORIES.keys()))
+            if cat == "General":
+                for r in ranking[:15]:
+                    st.markdown(f"**#{r['rank']}** {r['name']} — {r['score']} pts")
+                    st.caption(f"{r['nationality']} | ⚽ {r['goals']} g | 🅰️ {r['assists']} a | 🏆 {r['ballon_dors']} BdO")
+            else:
+                field, _ = TOP_PLAYERS_CATEGORIES[cat]
+                items = sorted(ranking, key=lambda x: x.get(field, 0) if isinstance(x.get(field, 0), (int, float)) else 0, reverse=True)[:10]
+                for r in items:
+                    val = r.get(field, 0)
+                    st.markdown(f"**#{items.index(r)+1}** {r['name']} — **{val}**")
+        else:
+            teams = get_top_teams()
+            for t in teams[:15]:
+                st.markdown(f"**#{t['rank']}** {t['name']} — {t['total_titles']} títulos")
+                st.caption(f"{t['country']} | 🏠 {t['titles_domestic']} dom. | 🌍 {t['titles_international']} int.")
 
     st.divider()
 
