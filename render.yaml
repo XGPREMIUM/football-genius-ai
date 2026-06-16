@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: football-genius-ai
+    runtime: python
+    repo: https://github.com/XGPREMIUM/football-genius-ai
+    rootDir: football_ai
+    buildCommand: pip install streamlit && pip install -r requirements.txt
+    startCommand: streamlit run streamlit_app.py
+    autoDeploy: true
