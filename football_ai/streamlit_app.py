@@ -57,8 +57,6 @@ def init_session():
         st.session_state.streaming = False
     if "chat_active" not in st.session_state:
         st.session_state.chat_active = False
-    if "chat_active" not in st.session_state:
-        st.session_state.chat_active = False
 
     # Handle ?chat=1 query param (from floating button click)
     if st.query_params.get("chat") == "1":
