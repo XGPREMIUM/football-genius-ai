@@ -32,8 +32,8 @@ CUSTOM_CSS = """
 
     [data-testid="stChatMessage"] p {
         color: #e6edf3 !important;
-        font-size: 15px;
-        line-height: 1.6;
+        font-size: 17px;
+        line-height: 1.7;
     }
 
     [data-testid="stChatMessage"] strong {
@@ -76,9 +76,9 @@ CUSTOM_CSS = """
     }
 
     [data-testid="stSidebar"] .stButton button {
-        font-size: 0.8rem;
-        padding: 4px 8px;
-        min-height: 30px;
+        font-size: 0.95rem;
+        padding: 8px 12px;
+        min-height: 36px;
     }
 
     [data-testid="stSidebar"] .sidebar-header {
@@ -408,57 +408,53 @@ CUSTOM_CSS = """
 
     /* Landing page - clean redesign */
     .landing-container {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        min-height: calc(100vh - 120px);
-        padding: 20px;
+        padding: 2rem 20px 1rem;
     }
-    .landing { text-align: center; max-width: 600px; }
+    .landing { text-align: center; max-width: 680px; margin: 0 auto; }
     .landing-badge {
         display: inline-block;
         background: rgba(255,215,0,0.1);
         color: #ffd700;
-        font-size: 11px;
+        font-size: 13px;
         font-weight: 600;
-        padding: 5px 14px;
+        padding: 6px 18px;
         border-radius: 20px;
         border: 1px solid rgba(255,215,0,0.2);
-        margin-bottom: 16px;
+        margin-bottom: 20px;
         letter-spacing: 0.3px;
     }
     .landing-title {
-        font-size: clamp(2.2rem,7vw,3.5rem) !important;
+        font-size: clamp(2.8rem,8vw,4rem) !important;
         font-weight: 800 !important;
-        margin: 0 0 6px !important;
+        margin: 0 0 8px !important;
         line-height: 1.1;
         color: #e6edf3 !important;
     }
     .landing-sub {
-        font-size: clamp(1rem,2.5vw,1.2rem);
+        font-size: clamp(1.1rem,2.5vw,1.4rem);
         color: #8b949e;
-        margin: 0 0 28px;
+        margin: 0 0 32px;
     }
     .landing-grid {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
-        gap: 8px;
-        margin-bottom: 28px;
+        gap: 10px;
+        margin-bottom: 32px;
     }
     .landing-item {
         background: #161b22;
         border: 1px solid #21262d;
-        border-radius: 10px;
-        padding: 12px 6px;
-        font-size: 12px;
+        border-radius: 12px;
+        padding: 16px 8px;
+        font-size: 14px;
         color: #c9d1d9;
         transition: all 0.2s;
     }
     .landing-item:hover { border-color: #ffd700; background: #1c2333; }
-    .landing-item span { font-size: 18px; display: block; margin-bottom: 4px; }
+    .landing-item span { font-size: 22px; display: block; margin-bottom: 6px; }
     .landing-hint {
         color: #484f58;
-        font-size: 13px;
+        font-size: 14px;
         animation: hintPulse 2s infinite;
     }
     @keyframes hintPulse { 0%,100%{opacity:0.5} 50%{opacity:1} }
@@ -470,11 +466,11 @@ CUSTOM_CSS = """
 
     @media (max-width: 768px) {
         .landing-grid { grid-template-columns: repeat(3, 1fr); }
-        .landing-item { font-size: 11px; padding: 10px 4px; }
-        .landing-item span { font-size: 16px; }
+        .landing-item { font-size: 13px; padding: 14px 6px; }
+        .landing-item span { font-size: 20px; }
         .agent-float { bottom: 100px; right: 12px; }
         .agent-float-btn { width: 46px; height: 46px; font-size: 22px; }
-        .landing-container { min-height: calc(100vh - 160px); }
+        .landing-container { min-height: calc(100vh - 120px); }
     }
 
     @media (max-width: 480px) {
