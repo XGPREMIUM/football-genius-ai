@@ -20,6 +20,7 @@ from db import init_db, save_conversation, load_conversation, list_conversations
 from seed_data import seed_database
 from suggestions import MODE_QUESTIONS
 from rankings import get_player_ranking, get_top_teams, TOP_PLAYERS_CATEGORIES
+from charts import show_player_radar, show_comparison
 
 
 st.set_page_config(
@@ -147,9 +148,14 @@ with st.sidebar:
                     with st.container():
                         st.markdown(f"**{p['name']}**")
                         st.caption(f"{p['nationality']} | {p['position']} | {p.get('current_club', 'Sin club') or 'Sin club'}")
-                        if st.button(f"ℹ️ Info", key=f"info_{p['name']}", use_container_width=True):
-                            st.session_state.pending_question = f"Cuéntame todo sobre {p['name']}"
-                            st.rerun()
+                        cols = st.columns(2)
+                        with cols[0]:
+                            if st.button(f"ℹ️ Info", key=f"info_{p['name']}", use_container_width=True):
+                                st.session_state.pending_question = f"Cuéntame todo sobre {p['name']}"
+                                st.rerun()
+                        with cols[1]:
+                            if st.button(f"📊 Stats", key=f"stats_{p['name']}", use_container_width=True):
+                                show_player_radar(p['name'])
             else:
                 results = search_teams(search_q)
                 for t in results[:8]:
@@ -244,6 +250,33 @@ with st.sidebar:
 
     st.caption(f"🔧 **Modelo:** {settings.openrouter_model or settings.openai_model}")
     st.caption(f"☁️ **Proveedor:** {settings.ai_provider}")
+
+    st.markdown("""
+    <div style="text-align:center;margin:8px 0">
+        <button id="voiceBtn" onclick="startVoice()" style="background:linear-gradient(135deg,#ffd700,#daa520);border:none;border-radius:50%;width:48px;height:48px;font-size:22px;cursor:pointer;transition:all 0.2s" title="Preguntar por voz">🎤</button>
+        <p style="color:#8b949e;font-size:11px;margin:4px 0">Preguntar por voz</p>
+    </div>
+    <script>
+    function startVoice() {
+        if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+            alert('Tu navegador no soporta reconocimiento de voz');
+            return;
+        }
+        const rec = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        rec.lang = 'es-ES';
+        rec.onresult = function(e) {
+            const text = e.results[0][0].transcript;
+            const input = document.querySelector('[data-testid="stChatInput"] textarea');
+            if (input) {
+                const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
+                nativeInputValueSetter.call(input, text);
+                input.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+        };
+        rec.start();
+    }
+    </script>
+    """, unsafe_allow_html=True)
 
     if st.button("🗑️ Nueva conversación", use_container_width=True, type="primary"):
         new_conversation()
