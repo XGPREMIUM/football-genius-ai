@@ -428,13 +428,18 @@ st.markdown(
 st.markdown("""
 <div class="agent-float">
     <div class="agent-float-tooltip">👋 Abrir chat con el agente</div>
-    <button class="agent-float-btn" onclick="
-        const btns = document.querySelectorAll('button');
-        for (let b of btns) { if (b.innerText.includes('Empezar')) { b.click(); return; } }
-    " title="Abrir chat">🤖</button>
+    <button class="agent-float-btn" id="agentFloatBtn">🤖</button>
 </div>
 
 <script>
+// Floating agent button
+document.addEventListener('click', function(e) {
+    if (e.target.id === 'agentFloatBtn') {
+        const btns = document.querySelectorAll('button');
+        for (let b of btns) { if (b.innerText.includes('Empezar')) { b.click(); return; } }
+    }
+});
+
 // Autoscroll
 function scrollToBottom() {
     const main = document.querySelector('[data-testid="stAppViewContainer"]');
