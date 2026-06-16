@@ -294,7 +294,9 @@ with st.sidebar:
 
 
 # MAIN AREA
-st.markdown(CUSTOM_CSS if st.session_state.dark_mode else LIGHT_CSS, unsafe_allow_html=True)
+st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
+if not st.session_state.dark_mode:
+    st.markdown(LIGHT_CSS, unsafe_allow_html=True)
 
 # --- LANDING PAGE (when no messages and chat not active) ---
 if not st.session_state.messages and not st.session_state.chat_active:

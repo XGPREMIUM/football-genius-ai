@@ -535,9 +535,18 @@ LIGHT_CSS = """
     .stApp {
         background: linear-gradient(135deg, #f0f4f8 0%, #ffffff 100%);
     }
+    .stApp, .stMarkdown, p, li, span, div:not([data-testid]), .stCaption, label {
+        color: #1a1a2e !important;
+    }
     [data-testid="stSidebar"] {
         background: linear-gradient(180deg, #ffffff 0%, #f0f4f8 100%);
         border-right: 1px solid #d0d8e0;
+    }
+    [data-testid="stSidebar"] * {
+        color: #1a1a2e !important;
+    }
+    [data-testid="stSidebar"] .stCaption, [data-testid="stSidebar"] .st-cb {
+        color: #555 !important;
     }
     [data-testid="stChatMessage"]:has([data-testid="chatAvatarIcon-user"]) {
         background: linear-gradient(135deg, #e8f4e8, #d0e8d0);
@@ -547,5 +556,89 @@ LIGHT_CSS = """
         background: linear-gradient(135deg, #e8eef4, #d0dce8);
         border: 1px solid #a0b8d0;
     }
+    [data-testid="stChatMessage"] p, [data-testid="stChatMessage"] li {
+        color: #1a1a2e !important;
+    }
+    [data-testid="stChatMessage"] strong {
+        color: #b8860b !important;
+    }
+    [data-testid="stChatMessage"] code {
+        background: #e0e4e8;
+        color: #c0392b;
+    }
+    [data-testid="stSelectbox"] div[data-baseweb="select"] {
+        background: #ffffff;
+        border: 1px solid #b0b8c0;
+        color: #1a1a2e;
+    }
+    [data-testid="stTextInput"] input {
+        background: #ffffff !important;
+        border: 1px solid #b0b8c0 !important;
+        color: #1a1a2e !important;
+    }
+    [data-testid="stChatInput"] {
+        background: #ffffff !important;
+        border: 1px solid #b0b8c0 !important;
+        color: #1a1a2e !important;
+    }
+    [data-testid="stChatInput"] textarea::placeholder {
+        color: #888 !important;
+    }
+    [data-testid="stExpander"] {
+        background: #ffffff;
+        border: 1px solid #b0b8c0;
+    }
+    [data-testid="stExpander"] * {
+        color: #1a1a2e !important;
+    }
+    .stButton button {
+        color: #1a1a2e !important;
+    }
+    .stButton button[kind="secondary"] {
+        color: #b8860b !important;
+        border: 1px solid #b0b8c0 !important;
+    }
+    hr {
+        border-color: #d0d8e0 !important;
+    }
+    [data-testid="stMetric"] {
+        background: #ffffff;
+        border: 1px solid #b0b8c0;
+    }
+    [data-testid="stMetricValue"] {
+        color: #b8860b !important;
+    }
+    h1, h2, h3 {
+        color: #b8860b !important;
+    }
+    .mode-indicator {
+        background: #ffffff;
+        border: 1px solid #b0b8c0;
+        color: #555;
+    }
+    .footer {
+        color: #aaa !important;
+        border-top-color: #d0d8e0 !important;
+    }
+    ::-webkit-scrollbar-track { background: #f0f4f8; }
+    ::-webkit-scrollbar-thumb { background: #b0b8c0; }
+    .landing-container .stButton button { display: none; }
+    .landing-badge {
+        background: rgba(184,134,11,0.1) !important;
+        color: #b8860b !important;
+        border-color: rgba(184,134,11,0.2) !important;
+    }
+    .landing-title { color: #1a1a2e !important; }
+    .landing-item {
+        background: #ffffff !important;
+        border-color: #b0b8c0 !important;
+        color: #1a1a2e !important;
+    }
+    .landing-item:hover {
+        border-color: #b8860b !important;
+        background: #f8f6f0 !important;
+    }
+    .landing-item span { color: #b8860b !important; }
+    .landing-sub, .landing-hint { color: #666 !important; }
 </style>
 """
