@@ -318,13 +318,14 @@ if not st.session_state.messages and not st.session_state.chat_active:
             <div class="landing-item"><span>🏛️</span> Director</div>
             <div class="landing-item"><span>📈</span> Estadístico</div>
         </div>
-        <p class="landing-hint">Toca el icono 🤖 para empezar</p>
     </div>
     """, unsafe_allow_html=True)
 
-    if st.button("", key="activate_chat"):
-        st.session_state.chat_active = True
-        st.rerun()
+    start_col1, start_col2, start_col3 = st.columns([1, 2, 1])
+    with start_col2:
+        if st.button("⚽ Empezar", use_container_width=True, type="primary"):
+            st.session_state.chat_active = True
+            st.rerun()
 
     st.markdown('</div>', unsafe_allow_html=True)
 
@@ -428,16 +429,8 @@ st.markdown("""
 <div class="agent-float">
     <div class="agent-float-tooltip">👋 Abrir chat con el agente</div>
     <button class="agent-float-btn" onclick="
-        function findAndClick() {
-            const btns = document.querySelectorAll('button');
-            for (let b of btns) {
-                if (b.innerText.trim() === '' && b.closest('.stButton')) {
-                    b.click();
-                    return;
-                }
-            }
-        }
-        findAndClick();
+        const btns = document.querySelectorAll('button');
+        for (let b of btns) { if (b.innerText.includes('Empezar')) { b.click(); return; } }
     " title="Abrir chat">🤖</button>
 </div>
 

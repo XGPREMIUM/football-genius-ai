@@ -524,17 +524,6 @@ CUSTOM_CSS = """
 
     /* Hide empty toggle columns on landing */
     .landing + div [data-testid="column"]:has(.stButton) { display: none; }
-
-    /* Hide activate_chat button (JS trigger only) */
-    button[kind="secondary"]:has(~ div .landing) { display: none; }
-</style>
-"""
-
-LIGHT_CSS = """
-<style>
-    .stApp {
-        background: linear-gradient(135deg, #f0f4f8 0%, #ffffff 100%);
-    }
     .stApp, .stMarkdown, p, li, span, div:not([data-testid]), .stCaption, label {
         color: #1a1a2e !important;
     }
