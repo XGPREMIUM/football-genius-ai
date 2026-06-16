@@ -391,36 +391,36 @@ with chat_container:
 # Chat input (only show when chat is active or there are messages)
 if st.session_state.chat_active or st.session_state.messages:
     if prompt := st.chat_input("Pregúntame sobre fútbol..."):
-    st.session_state.messages.append({"role": "user", "content": prompt})
-    with st.chat_message("user"):
-        st.markdown(prompt)
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        with st.chat_message("user"):
+            st.markdown(prompt)
 
-    with st.chat_message("assistant"):
-        place = st.empty()
-        place.markdown(TYPING_HTML, unsafe_allow_html=True)
-        full_response = ""
-        try:
-            async def stream_and_collect():
-                result = ""
-                async for chunk in st.session_state.agent.ask_stream(prompt, st.session_state.messages[:-1]):
-                    result += chunk
-                    place.markdown(result + "▌")
-                return result
-
-            full_response = asyncio.run(stream_and_collect())
-            place.markdown(full_response)
-        except Exception as e:
+        with st.chat_message("assistant"):
+            place = st.empty()
+            place.markdown(TYPING_HTML, unsafe_allow_html=True)
+            full_response = ""
             try:
-                full_response = asyncio.run(
-                    st.session_state.agent.ask(prompt, st.session_state.messages[:-1])
-                )
-                place.markdown(full_response)
-            except Exception as e2:
-                place.error(f"Error: {e2}")
+                async def stream_and_collect():
+                    result = ""
+                    async for chunk in st.session_state.agent.ask_stream(prompt, st.session_state.messages[:-1]):
+                        result += chunk
+                        place.markdown(result + "▌")
+                    return result
 
-    st.session_state.messages.append({"role": "assistant", "content": full_response})
-    save_messages()
-    st.rerun()
+                full_response = asyncio.run(stream_and_collect())
+                place.markdown(full_response)
+            except Exception as e:
+                try:
+                    full_response = asyncio.run(
+                        st.session_state.agent.ask(prompt, st.session_state.messages[:-1])
+                    )
+                    place.markdown(full_response)
+                except Exception as e2:
+                    place.error(f"Error: {e2}")
+
+        st.session_state.messages.append({"role": "assistant", "content": full_response})
+        save_messages()
+        st.rerun()
 
 # Footer
 st.markdown(
