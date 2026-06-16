@@ -57,11 +57,8 @@ def init_session():
         st.session_state.streaming = False
     if "chat_active" not in st.session_state:
         st.session_state.chat_active = False
-
-    # Handle ?chat=1 query param (from floating button click)
-    if st.query_params.get("chat") == "1":
-        st.session_state.chat_active = True
-        st.query_params.clear()
+    if "_chat_handled" not in st.session_state:
+        st.session_state._chat_handled = False
 
 
 init_session()
@@ -431,9 +428,16 @@ st.markdown("""
 <div class="agent-float">
     <div class="agent-float-tooltip">👋 Abrir chat con el agente</div>
     <button class="agent-float-btn" onclick="
-        const u = new URL(window.location);
-        u.searchParams.set('chat','1');
-        window.location.href = u.toString();
+        function findAndClick() {
+            const btns = document.querySelectorAll('button');
+            for (let b of btns) {
+                if (b.innerText.trim() === '' && b.closest('.stButton')) {
+                    b.click();
+                    return;
+                }
+            }
+        }
+        findAndClick();
     " title="Abrir chat">🤖</button>
 </div>
 
