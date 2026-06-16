@@ -290,6 +290,11 @@ st.markdown(CUSTOM_CSS if st.session_state.dark_mode else LIGHT_CSS, unsafe_allo
 
 # --- LANDING PAGE (when no messages) ---
 if not st.session_state.messages:
+    toggle_col1, toggle_col2 = st.columns([20, 1])
+    with toggle_col2:
+        if st.button("🌙" if st.session_state.dark_mode else "☀️", key="ld_toggle", help="Toggle theme"):
+            st.session_state.dark_mode = not st.session_state.dark_mode
+            st.rerun()
     st.markdown("""
     <div class="landing">
         <div class="landing-hero">
@@ -323,19 +328,19 @@ if not st.session_state.messages:
         </div>
     </div>
     """, unsafe_allow_html=True)
-
-mode_icon, mode_desc = MODE_DESCRIPTIONS.get(st.session_state.current_mode, ("", ""))
-header_col1, header_col2 = st.columns([6, 1])
-with header_col1:
-    st.markdown(
-        f'<span class="mode-indicator">{mode_icon} Modo: <b>{st.session_state.current_mode.upper()}</b> &nbsp;—&nbsp; {mode_desc}</span>',
-        unsafe_allow_html=True,
-    )
-with header_col2:
-    st.markdown("<br>", unsafe_allow_html=True)
-    if st.button("🌙" if st.session_state.dark_mode else "☀️", help="Toggle theme"):
-        st.session_state.dark_mode = not st.session_state.dark_mode
-        st.rerun()
+else:
+    mode_icon, mode_desc = MODE_DESCRIPTIONS.get(st.session_state.current_mode, ("", ""))
+    header_col1, header_col2 = st.columns([6, 1])
+    with header_col1:
+        st.markdown(
+            f'<span class="mode-indicator">{mode_icon} Modo: <b>{st.session_state.current_mode.upper()}</b> &nbsp;—&nbsp; {mode_desc}</span>',
+            unsafe_allow_html=True,
+        )
+    with header_col2:
+        st.markdown("<br>", unsafe_allow_html=True)
+        if st.button("🌙" if st.session_state.dark_mode else "☀️", help="Toggle theme", key="toggle_theme"):
+            st.session_state.dark_mode = not st.session_state.dark_mode
+            st.rerun()
 
 # Chat messages
 chat_container = st.container()

@@ -494,12 +494,12 @@ CUSTOM_CSS = """
         cursor: pointer;
     }
     .agent-float-btn {
-        width: 56px;
-        height: 56px;
+        width: 52px;
+        height: 52px;
         border-radius: 50%;
         background: linear-gradient(135deg, #ffd700, #daa520);
         border: none;
-        font-size: 26px;
+        font-size: 24px;
         box-shadow: 0 4px 20px rgba(255,215,0,0.3);
         cursor: pointer;
         transition: all 0.3s;
@@ -515,13 +515,13 @@ CUSTOM_CSS = """
     }
     .agent-float-tooltip {
         position: absolute;
-        bottom: 64px;
-        right: 0;
+        bottom: 60px;
+        right: 4px;
         background: #161b22;
         border: 1px solid #30363d;
         border-radius: 10px;
-        padding: 10px 14px;
-        font-size: 12px;
+        padding: 8px 12px;
+        font-size: 11px;
         color: #c9d1d9;
         white-space: nowrap;
         animation: tooltipIn 0.3s ease;
@@ -529,6 +529,9 @@ CUSTOM_CSS = """
     }
     .agent-float:hover .agent-float-tooltip { display: block; }
     @keyframes tooltipIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Hide empty toggle columns on landing */
+    .landing + div [data-testid="column"]:has(.stButton) { display: none; }
 
     @media (max-width: 768px) {
         .landing-features { grid-template-columns: repeat(2, 1fr); }
