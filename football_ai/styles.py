@@ -466,6 +466,19 @@ CUSTOM_CSS = """
     .landing-card p { font-size: 11px; color: #8b949e; margin: 0; }
     .landing-cta { text-align: center; margin: 16px 0 32px; }
     .landing-cta p { font-size: 14px; color: #c9d1d9; margin-bottom: 10px; }
+    .landing-start-btn {
+        background: linear-gradient(135deg,#ffd700,#daa520);
+        color: #0d1117;
+        border: none;
+        border-radius: 12px;
+        padding: 12px 28px;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s;
+        box-shadow: 0 4px 20px rgba(255,215,0,0.2);
+    }
+    .landing-start-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 30px rgba(255,215,0,0.4); }
     .landing-chips {
         display: flex;
         justify-content: center;
@@ -533,12 +546,8 @@ CUSTOM_CSS = """
     /* Hide empty toggle columns on landing */
     .landing + div [data-testid="column"]:has(.stButton) { display: none; }
 
-    @media (max-width: 768px) {
-        .landing-features { grid-template-columns: repeat(2, 1fr); }
-        .landing-chips { overflow-x: auto; flex-wrap: nowrap; justify-content: flex-start; padding-bottom: 8px; }
-        .agent-float { bottom: 100px; right: 12px; }
-        .agent-float-btn { width: 46px; height: 46px; font-size: 22px; }
-    }
+    /* Hide activate_chat button (JS trigger only) */
+    button[kind="secondary"]:has(~ div .landing) { display: none; }
 </style>
 """
 

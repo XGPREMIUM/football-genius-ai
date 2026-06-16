@@ -55,6 +55,8 @@ def init_session():
         st.session_state.dark_mode = True
     if "streaming" not in st.session_state:
         st.session_state.streaming = False
+    if "chat_active" not in st.session_state:
+        st.session_state.chat_active = False
 
 
 init_session()
@@ -71,6 +73,7 @@ def save_messages():
 def new_conversation():
     st.session_state.session_id = str(uuid.uuid4())
     st.session_state.messages = []
+    st.session_state.chat_active = False
     save_messages()
     st.rerun()
 
@@ -288,10 +291,10 @@ with st.sidebar:
 # MAIN AREA
 st.markdown(CUSTOM_CSS if st.session_state.dark_mode else LIGHT_CSS, unsafe_allow_html=True)
 
-# --- LANDING PAGE (when no messages) ---
-if not st.session_state.messages:
-    toggle_col1, toggle_col2 = st.columns([20, 1])
-    with toggle_col2:
+# --- LANDING PAGE (when no messages and chat not active) ---
+if not st.session_state.messages and not st.session_state.chat_active:
+    landing_col1, landing_col2 = st.columns([20, 1])
+    with landing_col2:
         if st.button("🌙" if st.session_state.dark_mode else "☀️", key="ld_toggle", help="Toggle theme"):
             st.session_state.dark_mode = not st.session_state.dark_mode
             st.rerun()
@@ -310,24 +313,25 @@ if not st.session_state.messages:
             </div>
         </div>
         <div class="landing-features">
-            <div class="landing-card"><span class="landing-card-icon">🎯</span><h3>Scout</h3><p>Analiza promesas y talentos emergentes</p></div>
-            <div class="landing-card"><span class="landing-card-icon">📋</span><h3>Táctico</h3><p>Esquemas, formaciones y estrategias</p></div>
-            <div class="landing-card"><span class="landing-card-icon">🏆</span><h3>GOAT</h3><p>Debates y comparativas históricas</p></div>
-            <div class="landing-card"><span class="landing-card-icon">💰</span><h3>Mercado</h3><p>Fichajes, valores y planificación</p></div>
-            <div class="landing-card"><span class="landing-card-icon">📊</span><h3>Estadísticas</h3><p>Métricas, xG y datos avanzados</p></div>
-            <div class="landing-card"><span class="landing-card-icon">📰</span><h3>Periodismo</h3><p>Crónicas, reportajes y columnas</p></div>
+            <div class="landing-card"><span class="landing-card-icon">🎯</span><h3>Scout</h3><p>Analiza promesas y talentos</p></div>
+            <div class="landing-card"><span class="landing-card-icon">📋</span><h3>Táctico</h3><p>Esquemas y estrategias</p></div>
+            <div class="landing-card"><span class="landing-card-icon">🏆</span><h3>GOAT</h3><p>Debates históricos</p></div>
+            <div class="landing-card"><span class="landing-card-icon">💰</span><h3>Mercado</h3><p>Fichajes y valores</p></div>
+            <div class="landing-card"><span class="landing-card-icon">📊</span><h3>Estadísticas</h3><p>Métricas avanzadas</p></div>
+            <div class="landing-card"><span class="landing-card-icon">📰</span><h3>Periodismo</h3><p>Crónicas y reportajes</p></div>
         </div>
         <div class="landing-cta">
-            <p>💬 Escribe tu pregunta sobre fútbol en el chat de abajo</p>
-            <div class="landing-chips">
-                <span class="landing-chip" onclick="document.querySelector('[data-testid=\\'stChatInput\\'] textarea')?.focus()">🔍 Analiza a Lamine Yamal</span>
-                <span class="landing-chip" onclick="document.querySelector('[data-testid=\\'stChatInput\\'] textarea')?.focus()">⚔️ Messi vs Ronaldo</span>
-                <span class="landing-chip" onclick="document.querySelector('[data-testid=\\'stChatInput\\'] textarea')?.focus()">📊 ¿Qué es el xG?</span>
-                <span class="landing-chip" onclick="document.querySelector('[data-testid=\\'stChatInput\\'] textarea')?.focus()">🏆 Quién ganará el Mundial</span>
-            </div>
+            <button class="landing-start-btn" onclick="document.querySelector('[data-testid=\\'baseButton-secondary\\']')?.click()">
+                🤖 Chatear con el agente
+            </button>
         </div>
     </div>
     """, unsafe_allow_html=True)
+
+    if st.button("Activar chat", type="secondary", key="activate_chat"):
+        st.session_state.chat_active = True
+        st.rerun()
+
 else:
     mode_icon, mode_desc = MODE_DESCRIPTIONS.get(st.session_state.current_mode, ("", ""))
     header_col1, header_col2 = st.columns([6, 1])
@@ -384,8 +388,9 @@ with chat_container:
         save_messages()
         st.rerun()
 
-# Chat input
-if prompt := st.chat_input("Pregúntame sobre fútbol..."):
+# Chat input (only show when chat is active or there are messages)
+if st.session_state.chat_active or st.session_state.messages:
+    if prompt := st.chat_input("Pregúntame sobre fútbol..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
@@ -425,8 +430,14 @@ st.markdown(
 
 st.markdown("""
 <div class="agent-float">
-    <div class="agent-float-tooltip">👋 Pregúntame lo que quieras</div>
-    <button class="agent-float-btn" onclick="document.querySelector('[data-testid=\\'stChatInput\\'] textarea')?.focus()" title="Preguntar al agente">🤖</button>
+    <div class="agent-float-tooltip">👋 Chatear con el agente</div>
+    <button class="agent-float-btn" onclick="
+        const btn = document.querySelector('[data-testid=\\'baseButton-secondary\\']');
+        if (btn) { btn.click(); } else {
+            const input = document.querySelector('[data-testid=\\'stChatInput\\'] textarea');
+            if (input) input.focus();
+        }
+    " title="Abrir chat">🤖</button>
 </div>
 
 <script>
