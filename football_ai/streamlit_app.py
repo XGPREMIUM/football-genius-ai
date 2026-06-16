@@ -57,6 +57,13 @@ def init_session():
         st.session_state.streaming = False
     if "chat_active" not in st.session_state:
         st.session_state.chat_active = False
+    if "chat_active" not in st.session_state:
+        st.session_state.chat_active = False
+
+    # Handle ?chat=1 query param (from floating button click)
+    if st.query_params.get("chat") == "1":
+        st.session_state.chat_active = True
+        st.query_params.clear()
 
 
 init_session()
@@ -293,44 +300,36 @@ st.markdown(CUSTOM_CSS if st.session_state.dark_mode else LIGHT_CSS, unsafe_allo
 
 # --- LANDING PAGE (when no messages and chat not active) ---
 if not st.session_state.messages and not st.session_state.chat_active:
-    landing_col1, landing_col2 = st.columns([20, 1])
-    with landing_col2:
-        if st.button("🌙" if st.session_state.dark_mode else "☀️", key="ld_toggle", help="Toggle theme"):
-            st.session_state.dark_mode = not st.session_state.dark_mode
-            st.rerun()
+    st.markdown('<div class="landing-container">', unsafe_allow_html=True)
+
     st.markdown("""
     <div class="landing">
-        <div class="landing-hero">
-            <div class="landing-badge">⚡ AI Powered</div>
-            <h1 class="landing-title">⚽ Football Genius AI</h1>
-            <p class="landing-subtitle">La inteligencia artificial del fútbol mundial</p>
-            <p class="landing-desc">12 modos de análisis. Datos de 100+ jugadores, 70+ equipos. Comparativas, rankings y scouting al instante.</p>
-            <div class="landing-stats">
-                <div class="landing-stat"><span class="landing-stat-val">12</span><span class="landing-stat-lbl">Modos</span></div>
-                <div class="landing-stat"><span class="landing-stat-val">100+</span><span class="landing-stat-lbl">Jugadores</span></div>
-                <div class="landing-stat"><span class="landing-stat-val">70+</span><span class="landing-stat-lbl">Equipos</span></div>
-                <div class="landing-stat"><span class="landing-stat-val">16</span><span class="landing-stat-lbl">Competiciones</span></div>
-            </div>
+        <div class="landing-badge">⚡ Inteligencia Artificial Avanzada</div>
+        <h1 class="landing-title">Fútbol <span style="color:#ffd700">Genius</span></h1>
+        <p class="landing-sub">El agente de IA más completo del fútbol mundial</p>
+        <div class="landing-grid">
+            <div class="landing-item"><span>🎯</span> Scout</div>
+            <div class="landing-item"><span>📋</span> Táctico</div>
+            <div class="landing-item"><span>🏆</span> GOAT</div>
+            <div class="landing-item"><span>💰</span> Mercado</div>
+            <div class="landing-item"><span>📊</span> Stats</div>
+            <div class="landing-item"><span>📰</span> Periodismo</div>
+            <div class="landing-item"><span>🧠</span> Coach</div>
+            <div class="landing-item"><span>🔍</span> Talento</div>
+            <div class="landing-item"><span>📖</span> Enciclopedia</div>
+            <div class="landing-item"><span>🎬</span> Contenido</div>
+            <div class="landing-item"><span>🏛️</span> Director</div>
+            <div class="landing-item"><span>📈</span> Estadístico</div>
         </div>
-        <div class="landing-features">
-            <div class="landing-card"><span class="landing-card-icon">🎯</span><h3>Scout</h3><p>Analiza promesas y talentos</p></div>
-            <div class="landing-card"><span class="landing-card-icon">📋</span><h3>Táctico</h3><p>Esquemas y estrategias</p></div>
-            <div class="landing-card"><span class="landing-card-icon">🏆</span><h3>GOAT</h3><p>Debates históricos</p></div>
-            <div class="landing-card"><span class="landing-card-icon">💰</span><h3>Mercado</h3><p>Fichajes y valores</p></div>
-            <div class="landing-card"><span class="landing-card-icon">📊</span><h3>Estadísticas</h3><p>Métricas avanzadas</p></div>
-            <div class="landing-card"><span class="landing-card-icon">📰</span><h3>Periodismo</h3><p>Crónicas y reportajes</p></div>
-        </div>
-        <div class="landing-cta">
-            <button class="landing-start-btn" onclick="document.querySelector('[data-testid=\\'baseButton-secondary\\']')?.click()">
-                🤖 Chatear con el agente
-            </button>
-        </div>
+        <p class="landing-hint">Toca el icono 🤖 para empezar</p>
     </div>
     """, unsafe_allow_html=True)
 
-    if st.button("Activar chat", type="secondary", key="activate_chat"):
+    if st.button("", key="activate_chat"):
         st.session_state.chat_active = True
         st.rerun()
+
+    st.markdown('</div>', unsafe_allow_html=True)
 
 else:
     mode_icon, mode_desc = MODE_DESCRIPTIONS.get(st.session_state.current_mode, ("", ""))
@@ -430,13 +429,11 @@ st.markdown(
 
 st.markdown("""
 <div class="agent-float">
-    <div class="agent-float-tooltip">👋 Chatear con el agente</div>
+    <div class="agent-float-tooltip">👋 Abrir chat con el agente</div>
     <button class="agent-float-btn" onclick="
-        const btn = document.querySelector('[data-testid=\\'baseButton-secondary\\']');
-        if (btn) { btn.click(); } else {
-            const input = document.querySelector('[data-testid=\\'stChatInput\\'] textarea');
-            if (input) input.focus();
-        }
+        const u = new URL(window.location);
+        u.searchParams.set('chat','1');
+        window.location.href = u.toString();
     " title="Abrir chat">🤖</button>
 </div>
 

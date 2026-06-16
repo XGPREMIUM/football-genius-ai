@@ -4,6 +4,15 @@ CUSTOM_CSS = """
 
     * { font-family: 'Inter', -apple-system, sans-serif; }
 
+    /* Hide Streamlit default header elements */
+    header[data-testid="stHeader"] { display: none !important; }
+    .stAppToolbar, .stAppDeployButton, #MainMenu { display: none !important; }
+    .stApp > header { display: none !important; }
+    .main > div:first-child > div:first-child { padding-top: 0 !important; }
+
+    /* Main content - remove top padding */
+    .block-container { padding-top: 1rem !important; }
+
     /* Main background */
     .stApp {
         background: #0d1117;
@@ -397,106 +406,80 @@ CUSTOM_CSS = """
     @keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
     @keyframes toastOut { from { opacity: 1; } to { opacity: 0; transform: translateX(-50%) translateY(-10px); } }
 
-    /* Landing page */
-    .landing { max-width: 800px; margin: 20px auto 0; padding: 0 16px; }
-    .landing-hero { text-align: center; padding: 20px 0 0; }
+    /* Landing page - clean redesign */
+    .landing-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: calc(100vh - 120px);
+        padding: 20px;
+    }
+    .landing { text-align: center; max-width: 600px; }
     .landing-badge {
         display: inline-block;
-        background: linear-gradient(135deg,#ffd700,#daa520);
-        color: #0d1117;
+        background: rgba(255,215,0,0.1);
+        color: #ffd700;
         font-size: 11px;
-        font-weight: 700;
-        padding: 4px 14px;
+        font-weight: 600;
+        padding: 5px 14px;
         border-radius: 20px;
-        letter-spacing: 0.5px;
-        margin-bottom: 12px;
+        border: 1px solid rgba(255,215,0,0.2);
+        margin-bottom: 16px;
+        letter-spacing: 0.3px;
     }
     .landing-title {
-        font-size: clamp(1.8rem,5vw,2.6rem) !important;
+        font-size: clamp(2.2rem,7vw,3.5rem) !important;
         font-weight: 800 !important;
-        margin: 8px 0 !important;
-        line-height: 1.2;
+        margin: 0 0 6px !important;
+        line-height: 1.1;
+        color: #e6edf3 !important;
     }
-    .landing-subtitle {
-        font-size: clamp(1rem,2.5vw,1.3rem);
+    .landing-sub {
+        font-size: clamp(1rem,2.5vw,1.2rem);
         color: #8b949e;
-        margin: 4px 0;
+        margin: 0 0 28px;
     }
-    .landing-desc {
-        font-size: 14px;
-        color: #8b949e;
-        max-width: 500px;
-        margin: 10px auto 0;
-        line-height: 1.5;
-    }
-    .landing-stats {
-        display: flex;
-        justify-content: center;
-        gap: 24px;
-        margin: 24px 0;
-        flex-wrap: wrap;
-    }
-    .landing-stat {
-        background: #161b22;
-        border: 1px solid #21262d;
-        border-radius: 12px;
-        padding: 14px 22px;
-        text-align: center;
-        min-width: 80px;
-    }
-    .landing-stat-val { display: block; font-size: 1.4rem; font-weight: 700; color: #ffd700; }
-    .landing-stat-lbl { display: block; font-size: 11px; color: #8b949e; margin-top: 2px; }
-    .landing-features {
+    .landing-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-        gap: 12px;
-        margin: 24px 0;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+        margin-bottom: 28px;
     }
-    .landing-card {
+    .landing-item {
         background: #161b22;
         border: 1px solid #21262d;
-        border-radius: 12px;
-        padding: 16px 14px;
-        text-align: center;
-        transition: all 0.2s;
-    }
-    .landing-card:hover { border-color: #ffd700; transform: translateY(-2px); }
-    .landing-card-icon { font-size: 1.5rem; display: block; margin-bottom: 6px; }
-    .landing-card h3 { font-size: 13px !important; margin: 0 0 4px !important; color: #e6edf3 !important; }
-    .landing-card p { font-size: 11px; color: #8b949e; margin: 0; }
-    .landing-cta { text-align: center; margin: 16px 0 32px; }
-    .landing-cta p { font-size: 14px; color: #c9d1d9; margin-bottom: 10px; }
-    .landing-start-btn {
-        background: linear-gradient(135deg,#ffd700,#daa520);
-        color: #0d1117;
-        border: none;
-        border-radius: 12px;
-        padding: 12px 28px;
-        font-size: 16px;
-        font-weight: 700;
-        cursor: pointer;
-        transition: all 0.2s;
-        box-shadow: 0 4px 20px rgba(255,215,0,0.2);
-    }
-    .landing-start-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 30px rgba(255,215,0,0.4); }
-    .landing-chips {
-        display: flex;
-        justify-content: center;
-        gap: 8px;
-        flex-wrap: wrap;
-    }
-    .landing-chip {
-        background: #21262d;
-        border: 1px solid #30363d;
-        border-radius: 20px;
-        padding: 6px 14px;
+        border-radius: 10px;
+        padding: 12px 6px;
         font-size: 12px;
         color: #c9d1d9;
-        cursor: pointer;
         transition: all 0.2s;
-        white-space: nowrap;
     }
-    .landing-chip:hover { border-color: #ffd700; color: #ffd700; background: #161b22; }
+    .landing-item:hover { border-color: #ffd700; background: #1c2333; }
+    .landing-item span { font-size: 18px; display: block; margin-bottom: 4px; }
+    .landing-hint {
+        color: #484f58;
+        font-size: 13px;
+        animation: hintPulse 2s infinite;
+    }
+    @keyframes hintPulse { 0%,100%{opacity:0.5} 50%{opacity:1} }
+
+    /* Hide activate_chat button */
+    .landing-container + .stButton button {
+        position: fixed; opacity: 0; pointer-events: none; z-index: -1;
+    }
+
+    @media (max-width: 768px) {
+        .landing-grid { grid-template-columns: repeat(3, 1fr); }
+        .landing-item { font-size: 11px; padding: 10px 4px; }
+        .landing-item span { font-size: 16px; }
+        .agent-float { bottom: 100px; right: 12px; }
+        .agent-float-btn { width: 46px; height: 46px; font-size: 22px; }
+        .landing-container { min-height: calc(100vh - 160px); }
+    }
+
+    @media (max-width: 480px) {
+        .landing-grid { grid-template-columns: repeat(2, 1fr); }
+    }
 
     /* Floating agent icon */
     .agent-float {
