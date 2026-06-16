@@ -288,10 +288,45 @@ with st.sidebar:
 # MAIN AREA
 st.markdown(CUSTOM_CSS if st.session_state.dark_mode else LIGHT_CSS, unsafe_allow_html=True)
 
+# --- LANDING PAGE (when no messages) ---
+if not st.session_state.messages:
+    st.markdown("""
+    <div class="landing">
+        <div class="landing-hero">
+            <div class="landing-badge">⚡ AI Powered</div>
+            <h1 class="landing-title">⚽ Football Genius AI</h1>
+            <p class="landing-subtitle">La inteligencia artificial del fútbol mundial</p>
+            <p class="landing-desc">12 modos de análisis. Datos de 100+ jugadores, 70+ equipos. Comparativas, rankings y scouting al instante.</p>
+            <div class="landing-stats">
+                <div class="landing-stat"><span class="landing-stat-val">12</span><span class="landing-stat-lbl">Modos</span></div>
+                <div class="landing-stat"><span class="landing-stat-val">100+</span><span class="landing-stat-lbl">Jugadores</span></div>
+                <div class="landing-stat"><span class="landing-stat-val">70+</span><span class="landing-stat-lbl">Equipos</span></div>
+                <div class="landing-stat"><span class="landing-stat-val">16</span><span class="landing-stat-lbl">Competiciones</span></div>
+            </div>
+        </div>
+        <div class="landing-features">
+            <div class="landing-card"><span class="landing-card-icon">🎯</span><h3>Scout</h3><p>Analiza promesas y talentos emergentes</p></div>
+            <div class="landing-card"><span class="landing-card-icon">📋</span><h3>Táctico</h3><p>Esquemas, formaciones y estrategias</p></div>
+            <div class="landing-card"><span class="landing-card-icon">🏆</span><h3>GOAT</h3><p>Debates y comparativas históricas</p></div>
+            <div class="landing-card"><span class="landing-card-icon">💰</span><h3>Mercado</h3><p>Fichajes, valores y planificación</p></div>
+            <div class="landing-card"><span class="landing-card-icon">📊</span><h3>Estadísticas</h3><p>Métricas, xG y datos avanzados</p></div>
+            <div class="landing-card"><span class="landing-card-icon">📰</span><h3>Periodismo</h3><p>Crónicas, reportajes y columnas</p></div>
+        </div>
+        <div class="landing-cta">
+            <p>💬 Escribe tu pregunta sobre fútbol en el chat de abajo</p>
+            <div class="landing-chips">
+                <span class="landing-chip" onclick="document.querySelector('[data-testid=\\'stChatInput\\'] textarea')?.focus()">🔍 Analiza a Lamine Yamal</span>
+                <span class="landing-chip" onclick="document.querySelector('[data-testid=\\'stChatInput\\'] textarea')?.focus()">⚔️ Messi vs Ronaldo</span>
+                <span class="landing-chip" onclick="document.querySelector('[data-testid=\\'stChatInput\\'] textarea')?.focus()">📊 ¿Qué es el xG?</span>
+                <span class="landing-chip" onclick="document.querySelector('[data-testid=\\'stChatInput\\'] textarea')?.focus()">🏆 Quién ganará el Mundial</span>
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
 mode_icon, mode_desc = MODE_DESCRIPTIONS.get(st.session_state.current_mode, ("", ""))
 header_col1, header_col2 = st.columns([6, 1])
 with header_col1:
-    st.title("⚽ Football Genius AI")
     st.markdown(
         f'<span class="mode-indicator">{mode_icon} Modo: <b>{st.session_state.current_mode.upper()}</b> &nbsp;—&nbsp; {mode_desc}</span>',
         unsafe_allow_html=True,
@@ -384,6 +419,11 @@ st.markdown(
 )
 
 st.markdown("""
+<div class="agent-float">
+    <div class="agent-float-tooltip">👋 Pregúntame lo que quieras</div>
+    <button class="agent-float-btn" onclick="document.querySelector('[data-testid=\\'stChatInput\\'] textarea')?.focus()" title="Preguntar al agente">🤖</button>
+</div>
+
 <script>
 // Autoscroll
 function scrollToBottom() {

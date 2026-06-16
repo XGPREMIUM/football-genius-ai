@@ -12,4 +12,4 @@ EXPOSE 7860
 
 ENV APP_FILE=football_ai/streamlit_app.py
 
-CMD streamlit run "$APP_FILE" --server.port=7860 --server.address=0.0.0.0
+CMD streamlit run football_ai/streamlit_app.py --server.port=7860 --server.address=0.0.0.0
