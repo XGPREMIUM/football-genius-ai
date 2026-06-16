@@ -22,6 +22,8 @@ from suggestions import MODE_QUESTIONS
 from rankings import get_player_ranking, get_top_teams, TOP_PLAYERS_CATEGORIES
 from charts import show_player_radar, show_comparison
 
+TYPING_HTML = '''<div class="typing-indicator"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div>'''
+
 
 st.set_page_config(
     page_title="Football Genius AI",
@@ -316,27 +318,27 @@ with chat_container:
             st.markdown(query)
 
         with st.chat_message("assistant"):
-            with st.spinner(""):
-                place = st.empty()
-                full_response = ""
-                try:
-                    async def stream_and_collect():
-                        result = ""
-                        async for chunk in st.session_state.agent.ask_stream(query, st.session_state.messages[:-1]):
-                            result += chunk
-                            place.markdown(result + "▌")
-                        return result
+            place = st.empty()
+            place.markdown(TYPING_HTML, unsafe_allow_html=True)
+            full_response = ""
+            try:
+                async def stream_and_collect():
+                    result = ""
+                    async for chunk in st.session_state.agent.ask_stream(query, st.session_state.messages[:-1]):
+                        result += chunk
+                        place.markdown(result + "▌")
+                    return result
 
-                    full_response = asyncio.run(stream_and_collect())
+                full_response = asyncio.run(stream_and_collect())
+                place.markdown(full_response)
+            except Exception as e:
+                try:
+                    full_response = asyncio.run(
+                        st.session_state.agent.ask(query, st.session_state.messages[:-1])
+                    )
                     place.markdown(full_response)
-                except Exception as e:
-                    try:
-                        full_response = asyncio.run(
-                            st.session_state.agent.ask(query, st.session_state.messages[:-1])
-                        )
-                        place.markdown(full_response)
-                    except Exception as e2:
-                        place.error(f"Error: {e2}")
+                except Exception as e2:
+                    place.error(f"Error: {e2}")
 
         st.session_state.messages.append({"role": "assistant", "content": full_response})
         save_messages()
@@ -349,27 +351,27 @@ if prompt := st.chat_input("Pregúntame sobre fútbol..."):
         st.markdown(prompt)
 
     with st.chat_message("assistant"):
-        with st.spinner(""):
-            place = st.empty()
-            full_response = ""
-            try:
-                async def stream_and_collect():
-                    result = ""
-                    async for chunk in st.session_state.agent.ask_stream(prompt, st.session_state.messages[:-1]):
-                        result += chunk
-                        place.markdown(result + "▌")
-                    return result
+        place = st.empty()
+        place.markdown(TYPING_HTML, unsafe_allow_html=True)
+        full_response = ""
+        try:
+            async def stream_and_collect():
+                result = ""
+                async for chunk in st.session_state.agent.ask_stream(prompt, st.session_state.messages[:-1]):
+                    result += chunk
+                    place.markdown(result + "▌")
+                return result
 
-                full_response = asyncio.run(stream_and_collect())
+            full_response = asyncio.run(stream_and_collect())
+            place.markdown(full_response)
+        except Exception as e:
+            try:
+                full_response = asyncio.run(
+                    st.session_state.agent.ask(prompt, st.session_state.messages[:-1])
+                )
                 place.markdown(full_response)
-            except Exception as e:
-                try:
-                    full_response = asyncio.run(
-                        st.session_state.agent.ask(prompt, st.session_state.messages[:-1])
-                    )
-                    place.markdown(full_response)
-                except Exception as e2:
-                    place.error(f"Error: {e2}")
+            except Exception as e2:
+                place.error(f"Error: {e2}")
 
     st.session_state.messages.append({"role": "assistant", "content": full_response})
     save_messages()
@@ -380,3 +382,41 @@ st.markdown(
     '<div class="footer">⚽ Football Genius AI — La inteligencia artificial del fútbol mundial</div>',
     unsafe_allow_html=True,
 )
+
+st.markdown("""
+<script>
+// Autoscroll
+function scrollToBottom() {
+    const main = document.querySelector('[data-testid="stAppViewContainer"]');
+    if (main) main.scrollTop = main.scrollHeight;
+}
+const observer = new MutationObserver(scrollToBottom);
+observer.observe(document.body, { childList: true, subtree: true });
+
+// Keyboard shortcuts
+document.addEventListener('keydown', function(e) {
+    // Ctrl+Shift+N = new conversation
+    if (e.ctrlKey && e.shiftKey && (e.key === 'n' || e.key === 'N')) {
+        e.preventDefault();
+        const btn = document.querySelector('button[kind="primary"]');
+        if (btn) btn.click();
+    }
+    // / to focus search (only when not typing in input)
+    if (e.key === '/' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        const tag = document.activeElement?.tagName?.toLowerCase();
+        if (tag !== 'input' && tag !== 'textarea') {
+            e.preventDefault();
+            const searchInput = document.querySelector('[data-testid="stTextInput"] input');
+            if (searchInput) {
+                searchInput.focus();
+                searchInput.select();
+            }
+        }
+    }
+    // Escape to blur
+    if (e.key === 'Escape') {
+        if (document.activeElement) document.activeElement.blur();
+    }
+});
+</script>
+""", unsafe_allow_html=True)

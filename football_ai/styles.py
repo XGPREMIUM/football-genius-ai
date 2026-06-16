@@ -348,6 +348,54 @@ CUSTOM_CSS = """
         color: #e6edf3;
         margin: 4px 0;
     }
+
+    /* Typing indicator */
+    .typing-indicator {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 12px 0;
+    }
+    .typing-indicator::before {
+        content: "🧠 Analizando";
+        color: #8b949e;
+        font-size: 13px;
+        font-style: italic;
+        margin-right: 8px;
+    }
+    .typing-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #ffd700;
+        animation: typingBounce 1.4s infinite;
+        opacity: 0.3;
+    }
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes typingBounce {
+        0%, 60%, 100% { transform: translateY(0); opacity: 0.3; }
+        30% { transform: translateY(-4px); opacity: 1; }
+    }
+
+    /* Toast for keyboard shortcuts */
+    .toast {
+        position: fixed;
+        bottom: 80px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #161b22;
+        border: 1px solid #30363d;
+        border-radius: 8px;
+        padding: 10px 18px;
+        color: #c9d1d9;
+        font-size: 13px;
+        z-index: 9999;
+        animation: toastIn 0.3s ease, toastOut 0.3s 2s ease forwards;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    }
+    @keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+    @keyframes toastOut { from { opacity: 1; } to { opacity: 0; transform: translateX(-50%) translateY(-10px); } }
 </style>
 """
 
