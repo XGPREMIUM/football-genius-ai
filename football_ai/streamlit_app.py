@@ -323,7 +323,7 @@ if not st.session_state.messages and not st.session_state.chat_active:
 
     start_col1, start_col2, start_col3 = st.columns([1, 2, 1])
     with start_col2:
-        if st.button("⚽ Empezar", use_container_width=True, type="primary"):
+        if st.button("⚽ Empezar", use_container_width=True):
             st.session_state.chat_active = True
             st.rerun()
 

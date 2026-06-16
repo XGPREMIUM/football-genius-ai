@@ -524,6 +524,11 @@ CUSTOM_CSS = """
 
     /* Hide empty toggle columns on landing */
     .landing + div [data-testid="column"]:has(.stButton) { display: none; }
+</style>
+"""
+
+LIGHT_CSS = """
+<style>
     .stApp, .stMarkdown, p, li, span, div:not([data-testid]), .stCaption, label {
         color: #1a1a2e !important;
     }
