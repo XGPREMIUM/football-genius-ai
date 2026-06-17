@@ -58,18 +58,19 @@ export default function Home() {
 
   useEffect(() => {
     if (!sessionId) return
-    supabase
-      .from("conversations")
-      .select("role, content, mode, created_at")
-      .eq("session_id", sessionId)
-      .order("created_at", { ascending: true })
-      .then(({ data, error }) => {
+    ;(async () => {
+      try {
+        const { data, error } = await supabase
+          .from("conversations")
+          .select("role, content, mode, created_at")
+          .eq("session_id", sessionId)
+          .order("created_at", { ascending: true })
         if (data && !error) {
           setMessages(data.map(m => ({ role: m.role as "user" | "assistant", content: m.content, mode: m.mode as Mode })))
           if (data.length > 0) setShowChat(true)
         }
-      })
-      .catch(() => {})
+      } catch {}
+    })()
   }, [sessionId])
 
   const saveMessage = useCallback(async (msg: Message) => {
