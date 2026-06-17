@@ -9,13 +9,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Query is required" }, { status: 400 })
     }
 
-    const response = await askAgent(query, mode || "general", history || [])
+    const origin = req.headers.get("origin") || req.headers.get("referer") || undefined
+    const response = await askAgent(query, mode || "general", history || [], origin)
     return NextResponse.json({ response })
-  } catch (error) {
+  } catch (error: any) {
     console.error("Chat API error:", error)
-    return NextResponse.json(
-      { error: "Error al procesar la consulta. Intenta de nuevo." },
-      { status: 500 }
-    )
+    const msg = error?.message || "Error desconocido"
+    return NextResponse.json({ error: msg }, { status: 500 })
   }
 }

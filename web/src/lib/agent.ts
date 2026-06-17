@@ -18,7 +18,8 @@ const SYSTEM_PROMPTS: Record<Mode, string> = {
 export async function askAgent(
   query: string,
   mode: Mode,
-  history: { role: "user" | "assistant"; content: string }[]
+  history: { role: "user" | "assistant"; content: string }[],
+  origin?: string
 ): Promise<string> {
   const systemPrompt = SYSTEM_PROMPTS[mode]
 
@@ -28,26 +29,34 @@ export async function askAgent(
     { role: "user", content: query } as const,
   ]
 
-  const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
-      "HTTP-Referer": process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
-    },
-    body: JSON.stringify({
-      model: "google/gemini-2.0-flash-001",
-      messages,
-      max_tokens: 1500,
-      temperature: 0.7,
-    }),
-  })
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 30000)
 
-  if (!response.ok) {
-    const err = await response.text()
-    throw new Error(`OpenRouter error ${response.status}: ${err}`)
+  try {
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        "HTTP-Referer": origin || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-2.0-flash-001",
+        messages,
+        max_tokens: 1500,
+        temperature: 0.7,
+      }),
+      signal: controller.signal,
+    })
+
+    if (!response.ok) {
+      const err = await response.text()
+      throw new Error(`OpenRouter ${response.status}: ${err}`)
+    }
+
+    const data = await response.json()
+    return data.choices[0]?.message?.content || "Lo siento, no pude generar una respuesta."
+  } finally {
+    clearTimeout(timeout)
   }
-
-  const data = await response.json()
-  return data.choices[0]?.message?.content || "Lo siento, no pude generar una respuesta."
 }

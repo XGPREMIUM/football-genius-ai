@@ -143,10 +143,12 @@ export default function Home() {
         body: JSON.stringify({ query: userMsg.content, mode, history: messages.map(m => ({ role: m.role, content: m.content })) }),
       })
       const data = await res.json()
-      setMessages(p => [...p, { role: "assistant", content: data.response || data.error || "Error", mode }])
-    } catch {
-      setMessages(p => [...p, { role: "assistant", content: t("connectionError"), mode }])
-      showToast(t("connectionError"), "error")
+      if (data.error) throw new Error(data.error)
+      setMessages(p => [...p, { role: "assistant", content: data.response, mode }])
+    } catch (e: any) {
+      const errMsg = e?.message || t("connectionError")
+      setMessages(p => [...p, { role: "assistant", content: errMsg, mode }])
+      showToast(errMsg, "error")
     } finally { setLoading(false) }
   }
 
