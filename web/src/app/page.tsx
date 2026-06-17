@@ -174,13 +174,13 @@ export default function Home() {
       <header className="sticky top-0 z-40 bg-canvas/80 backdrop-blur-xl border-b border-gray-800/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="flex items-center h-14 gap-4">
-            <button onClick={() => { setShowChat(false); setMessages([]) }} className="flex items-center gap-2 shrink-0 group">
+            <button onClick={() => { setShowChat(true); setTimeout(() => inputRef.current?.focus(), 100) }} className="flex items-center gap-2 shrink-0 group">
               <span className="text-xl">⚽</span>
               <span className="font-bold text-sm tracking-tight text-text-primary group-hover:text-white transition-colors hidden sm:inline">{t.title}</span>
             </button>
             <nav className="hidden md:flex items-center gap-1 flex-1 overflow-x-auto py-1">
               {NAV_MODES.map(mid => (
-                <button key={mid} onClick={() => setMode(mid)}
+                <button key={mid} onClick={() => { setMode(mid); setShowChat(true); setTimeout(() => inputRef.current?.focus(), 100) }}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${mode === mid ? "bg-amber-500/10 text-amber-400" : "text-text-secondary hover:text-gray-200 hover:bg-gray-800/50"}`}>
                   {MODE_META[mid].icon} {t.nav[NAV_MODES.indexOf(mid)]}
                 </button>
@@ -214,7 +214,7 @@ export default function Home() {
           <div className="md:hidden border-t border-gray-800/50 bg-gray-900/95 backdrop-blur-xl">
             <div className="max-w-7xl mx-auto px-4 py-3 grid grid-cols-3 gap-1">
               {NAV_MODES.map(mid => (
-                <button key={mid} onClick={() => { setMode(mid); setMobileMenu(false) }}
+                <button key={mid} onClick={() => { setMode(mid); setShowChat(true); setMobileMenu(false); setTimeout(() => inputRef.current?.focus(), 100) }}
                   className={`px-2 py-2 rounded-lg text-xs font-medium transition-all text-center ${mode === mid ? "bg-amber-500/10 text-amber-400" : "text-text-secondary hover:text-gray-200"}`}>
                   <div className="text-base mb-0.5">{MODE_META[mid].icon}</div>
                   <div>{t.nav[NAV_MODES.indexOf(mid)]}</div>
@@ -235,9 +235,9 @@ export default function Home() {
                 <div className="absolute bottom-1/4 right-1/4 text-7xl font-black text-amber-500 select-none">🏆</div>
               </div>
               <div className="relative z-10 max-w-4xl mx-auto px-4 text-center py-16">
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400 to-yellow-500 shadow-lg shadow-amber-500/20 mb-6">
+                <button onClick={() => { setShowChat(true); setTimeout(() => inputRef.current?.focus(), 100) }} className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400 to-yellow-500 shadow-lg shadow-amber-500/20 mb-6 hover:scale-110 transition-transform cursor-pointer">
                   <span className="text-3xl">⚽</span>
-                </div>
+                </button>
                 <h1 className="text-4xl sm:text-6xl md:text-7xl font-black tracking-tight mb-4">
                   <span className="bg-gradient-to-r from-amber-400 to-yellow-500 bg-clip-text text-transparent">{t.title}</span>
                 </h1>
@@ -254,10 +254,10 @@ export default function Home() {
                 </div>
                 <div className="flex justify-center gap-8 sm:gap-12 mt-12">
                   {[{ value: PLAYERS.length, label: t.stats[0], icon: "👤" }, { value: PLAYERS.length, label: t.stats[1], icon: "🏟️" }, { value: MODES.length, label: t.stats[2], icon: "🎯" }].map(s => (
-                    <div key={s.label} className="text-center">
-                      <div className="text-3xl sm:text-4xl font-black text-text-primary">{s.value}</div>
-                      <div className="text-xs text-gray-500 mt-1">{s.icon} {s.label}</div>
-                    </div>
+                    <button key={s.label} onClick={() => { setShowChat(true); setTimeout(() => inputRef.current?.focus(), 100) }} className="text-center group">
+                      <div className="text-3xl sm:text-4xl font-black text-text-primary group-hover:text-amber-400 transition-colors">{s.value}</div>
+                      <div className="text-xs text-gray-500 mt-1 group-hover:text-text-secondary transition-colors">{s.icon} {s.label}</div>
+                    </button>
                   ))}
                 </div>
               </div>
@@ -302,7 +302,7 @@ export default function Home() {
                 <div className="flex items-center gap-2 text-sm text-gray-500"><span>⚽</span><span>{t.title}</span></div>
                 <div className="flex items-center gap-4 text-xs text-gray-600">
                   <span>© 2026</span><span>·</span>
-                  <button onClick={() => { setShowChat(false); setMessages([]) }} className="hover:text-text-secondary transition-colors">{t.newChat}</button>
+                  <button onClick={() => { setShowChat(true); setTimeout(() => inputRef.current?.focus(), 100) }} className="hover:text-text-secondary transition-colors">{t.newChat}</button>
                   <span>·</span><span>Ctrl+Shift+N</span>
                 </div>
               </div>
