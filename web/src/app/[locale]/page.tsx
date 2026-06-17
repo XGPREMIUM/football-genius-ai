@@ -84,11 +84,10 @@ export default function Home() {
           role: msg.role,
           content: msg.content,
           mode: msg.mode || mode,
-          language: locale,
         }),
       })
     } catch {}
-  }, [sessionId, mode, locale])
+  }, [sessionId, mode])
 
   useEffect(() => {
     fetchPlayers().then(p => { setPlayerCount(p.length); setStatsLoaded(true) }).catch(() => setStatsLoaded(true))

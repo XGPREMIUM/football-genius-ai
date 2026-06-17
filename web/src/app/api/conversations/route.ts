@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const { session_id, role, content, mode, language } = await req.json()
+    const { session_id, role, content, mode } = await req.json()
 
     if (!session_id || !role || !content) {
       return NextResponse.json({ error: "session_id, role, and content are required" }, { status: 400 })
@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
 
     const { error } = await supabase
       .from("conversations")
-      .insert({ session_id, role, content, mode: mode || "general", language: language || "es" })
+      .insert({ session_id, role, content, mode: mode || "general" })
 
     if (error) throw error
     return NextResponse.json({ ok: true })
