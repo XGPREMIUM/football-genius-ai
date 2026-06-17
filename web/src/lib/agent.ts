@@ -28,8 +28,8 @@ export async function askAgent(
 
   const messages = [
     { role: "system", content: systemPrompt },
-    ...history.slice(-10).map(m => ({ role: m.role as "user" | "assistant", content: m.content })),
-    { role: "user", content: query } as const,
+    ...history.slice(-10).filter(m => m.content?.trim()).map(m => ({ role: m.role as "user" | "assistant", content: m.content })),
+    { role: "user", content: query },
   ]
 
   const controller = new AbortController()
