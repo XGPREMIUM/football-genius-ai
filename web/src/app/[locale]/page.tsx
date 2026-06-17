@@ -255,7 +255,7 @@ export default function Home() {
             <nav className="hidden md:flex items-center gap-1 flex-1 overflow-x-auto py-1">
               {NAV_MODES.map((mid, i) => (
                 <button key={mid} onClick={() => { setMode(mid); setShowChat(true); setTimeout(() => inputRef.current?.focus(), 100) }}
-                  title={t("nav")[i]}
+                  title={(t.raw("nav") as string[])[i]}
                   className={`px-2 py-1.5 rounded-lg text-sm transition-all ${mode === mid ? "bg-amber-500/10 text-amber-400" : "text-text-secondary hover:text-gray-200 hover:bg-gray-800/50"}`}>
                   {MODE_META[mid].icon}
                 </button>
@@ -283,7 +283,7 @@ export default function Home() {
             <div className="max-w-7xl mx-auto px-4 py-3 grid grid-cols-4 gap-1">
               {NAV_MODES.map((mid, i) => (
                 <button key={mid} onClick={() => { setMode(mid); setShowChat(true); setMobileMenu(false); setTimeout(() => inputRef.current?.focus(), 100) }}
-                  title={t("nav")[i]}
+                  title={(t.raw("nav") as string[])[i]}
                   className={`px-2 py-3 rounded-lg text-sm transition-all text-center ${mode === mid ? "bg-amber-500/10 text-amber-400" : "text-text-secondary hover:text-gray-200"}`}>
                   <div className="text-lg">{MODE_META[mid].icon}</div>
                 </button>
@@ -321,7 +321,7 @@ export default function Home() {
                   </button>
                 </div>
                 <div className="flex justify-center gap-8 sm:gap-12 mt-12">
-                  {[{ value: playerCount, label: t("stats")[0], icon: "👤" }, { value: teamCount, label: t("stats")[1], icon: "🏟️" }, { value: MODES.length, label: t("stats")[2], icon: "🎯" }].map(s => (
+                  {[{ value: playerCount, label: (t.raw("stats") as string[])[0], icon: "👤" }, { value: teamCount, label: (t.raw("stats") as string[])[1], icon: "🏟️" }, { value: MODES.length, label: (t.raw("stats") as string[])[2], icon: "🎯" }].map(s => (
                     <button key={s.label} onClick={() => { setShowChat(true); setTimeout(() => inputRef.current?.focus(), 100) }} className="text-center group">
                       <div className="text-3xl sm:text-4xl font-black text-text-primary group-hover:text-amber-400 transition-colors">
                         {s.value !== null ? s.value : <span className="inline-block w-12 h-9 rounded shimmer align-middle" />}
