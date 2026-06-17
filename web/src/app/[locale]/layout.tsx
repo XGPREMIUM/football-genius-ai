@@ -1,7 +1,8 @@
 import { NextIntlClientProvider } from "next-intl"
-import { getMessages, getTranslations } from "next-intl/server"
+import { getMessages } from "next-intl/server"
 import { notFound } from "next/navigation"
 import { routing } from "@/i18n/routing"
+import LangSetter from "@/components/LangSetter"
 
 export default async function LocaleLayout({
   children,
@@ -14,22 +15,11 @@ export default async function LocaleLayout({
   if (!routing.locales.includes(locale as any)) notFound()
 
   const messages = await getMessages()
-  const t = await getTranslations({ locale, namespace: "Home" })
 
   return (
-    <html lang={locale} suppressHydrationWarning>
-      <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `document.documentElement.classList.add(localStorage.getItem("theme") || "dark")`,
-          }}
-        />
-      </head>
-      <body className="antialiased">
-        <NextIntlClientProvider locale={locale} messages={messages}>
-          {children}
-        </NextIntlClientProvider>
-      </body>
-    </html>
+    <NextIntlClientProvider locale={locale} messages={messages}>
+      <LangSetter />
+      {children}
+    </NextIntlClientProvider>
   )
 }

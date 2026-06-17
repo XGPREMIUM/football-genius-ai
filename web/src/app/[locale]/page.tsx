@@ -5,6 +5,7 @@ import { useTranslations, useLocale } from "next-intl"
 import { useRouter, usePathname } from "@/i18n/routing"
 import { MODES } from "@/lib/data"
 import { fetchPlayers, fetchTeams } from "@/lib/api"
+import Toast, { showToast } from "@/components/Toast"
 import type { Message, Mode } from "@/lib/types"
 
 const NAV_MODES = ["general", "scout", "tactical", "goat", "encyclopedia", "coach", "transfer_market"] as Mode[]
@@ -41,9 +42,12 @@ export default function Home() {
   const [dark, setDark] = useState(true)
   const [playerCount, setPlayerCount] = useState<number | null>(null)
   const [teamCount, setTeamCount] = useState<number | null>(null)
+  const [statsLoaded, setStatsLoaded] = useState(false)
+  const chatContainerRef = useRef<HTMLDivElement>(null)
+  const [userScrolledUp, setUserScrolledUp] = useState(false)
 
   useEffect(() => {
-    fetchPlayers().then(p => setPlayerCount(p.length)).catch(() => {})
+    fetchPlayers().then(p => { setPlayerCount(p.length); setStatsLoaded(true) }).catch(() => setStatsLoaded(true))
     fetchTeams().then(t => setTeamCount(t.length)).catch(() => {})
   }, [])
 
@@ -67,7 +71,20 @@ export default function Home() {
   const inputRef = useRef<HTMLInputElement>(null)
   const recognitionRef = useRef<any>(null)
 
-  useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }) }, [messages])
+  useEffect(() => {
+    if (!userScrolledUp) messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+  }, [messages, userScrolledUp])
+
+  useEffect(() => {
+    const el = chatContainerRef.current
+    if (!el) return
+    const handler = () => {
+      const bottom = el.scrollHeight - el.scrollTop - el.clientHeight < 80
+      setUserScrolledUp(!bottom)
+    }
+    el.addEventListener("scroll", handler, { passive: true })
+    return () => el.removeEventListener("scroll", handler)
+  }, [])
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -129,6 +146,7 @@ export default function Home() {
       setMessages(p => [...p, { role: "assistant", content: data.response || data.error || "Error", mode }])
     } catch {
       setMessages(p => [...p, { role: "assistant", content: t("connectionError"), mode }])
+      showToast(t("connectionError"), "error")
     } finally { setLoading(false) }
   }
 
@@ -164,6 +182,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col bg-canvas text-text-primary selection:bg-amber-500/30">
+      <Toast />
       {/* Sticky Header */}
       <header className="sticky top-0 z-40 bg-canvas/80 backdrop-blur-xl border-b border-gray-800/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
@@ -247,9 +266,11 @@ export default function Home() {
                   </button>
                 </div>
                 <div className="flex justify-center gap-8 sm:gap-12 mt-12">
-                  {[{ value: playerCount ?? "...", label: t("stats")[0], icon: "👤" }, { value: teamCount ?? "...", label: t("stats")[1], icon: "🏟️" }, { value: MODES.length, label: t("stats")[2], icon: "🎯" }].map(s => (
+                  {[{ value: playerCount, label: t("stats")[0], icon: "👤" }, { value: teamCount, label: t("stats")[1], icon: "🏟️" }, { value: MODES.length, label: t("stats")[2], icon: "🎯" }].map(s => (
                     <button key={s.label} onClick={() => { setShowChat(true); setTimeout(() => inputRef.current?.focus(), 100) }} className="text-center group">
-                      <div className="text-3xl sm:text-4xl font-black text-text-primary group-hover:text-amber-400 transition-colors">{s.value}</div>
+                      <div className="text-3xl sm:text-4xl font-black text-text-primary group-hover:text-amber-400 transition-colors">
+                        {s.value !== null ? s.value : <span className="inline-block w-12 h-9 rounded shimmer align-middle" />}
+                      </div>
                       <div className="text-xs text-gray-500 mt-1 group-hover:text-text-secondary transition-colors">{s.icon} {s.label}</div>
                     </button>
                   ))}
@@ -301,7 +322,7 @@ export default function Home() {
           </>
         ) : (
           <div className="flex-1 flex flex-col min-h-0">
-            <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 max-w-4xl mx-auto w-full">
+            <div ref={chatContainerRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-3 max-w-4xl mx-auto w-full scrollbar-thin">
               {messages.length === 0 && (
                 <div className="flex items-center justify-center h-full min-h-[60vh] text-center">
                   <div>
