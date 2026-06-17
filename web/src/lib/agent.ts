@@ -44,7 +44,7 @@ export async function askAgent(
         "HTTP-Referer": origin || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
       },
       body: JSON.stringify({
-        model: "deepseek/deepseek-v4-flash",
+        model: "openrouter/free",
         messages,
         max_tokens: 1500,
         temperature: 0.7,
