@@ -1,35 +1,11 @@
 "use client"
 
 import { useState, useRef, useEffect, useCallback } from "react"
+import { useTranslations, useLocale } from "next-intl"
+import { useRouter, usePathname } from "@/i18n/routing"
 import { PLAYERS, MODES } from "@/lib/data"
 import type { Message, Mode } from "@/lib/types"
 
-const LANG = {
-  es: {
-    title: "Football Genius AI", tagline: "El agente de fútbol con IA más completo del mundo",
-    desc: "Scout, análisis táctico, GOAT, enciclopedia, coach y mucho más. Pregunta lo que quieras sobre fútbol.",
-    cta: "Comenzar Análisis", modesTitle: "Modos de Análisis", modesDesc: "Cada modo activa una personalidad única de IA especializada",
-    send: "Enviar", followUp: "Sigue preguntando...", newChat: "Nuevo análisis",
-    stats: ["Jugadores", "Equipos", "Modos"],
-    nav: ["General", "Scout", "Táctico", "GOAT", "Enciclopedia", "Coach", "Mercado"],
-    listening: "Escuchando...", speak: "Leer", stop: "Detener", share: "Compartir chat", copied: "¡Copiado!",
-    modesBtn: "Modos de Análisis", darkTitle: "Modo claro", lightTitle: "Modo oscuro", voiceTitle: "🎤 Voz",
-    startChat: "Escribe tu primera pregunta o usa el micrófono",
-  },
-  en: {
-    title: "Football Genius AI", tagline: "The most complete AI football agent in the world",
-    desc: "Scout, tactical analysis, GOAT, encyclopedia, coach and more. Ask anything about football.",
-    cta: "Start Analysis", modesTitle: "Analysis Modes", modesDesc: "Each mode activates a unique specialized AI personality",
-    send: "Send", followUp: "Keep asking...", newChat: "New analysis",
-    stats: ["Players", "Teams", "Modes"],
-    nav: ["General", "Scout", "Tactical", "GOAT", "Encyclopedia", "Coach", "Market"],
-    listening: "Listening...", speak: "Read", stop: "Stop", share: "Share chat", copied: "Copied!",
-    modesBtn: "Analysis Modes", darkTitle: "Light mode", lightTitle: "Dark mode", voiceTitle: "🎤 Voice",
-    startChat: "Type your first question or use the microphone",
-  },
-}
-
-type Lang = "es" | "en"
 const NAV_MODES = ["general", "scout", "tactical", "goat", "encyclopedia", "coach", "transfer_market"] as Mode[]
 
 const MODE_META: Record<Mode, { icon: string; gradient: string }> = {
@@ -48,11 +24,15 @@ const MODE_META: Record<Mode, { icon: string; gradient: string }> = {
 }
 
 export default function Home() {
+  const t = useTranslations("Home")
+  const locale = useLocale()
+  const router = useRouter()
+  const pathname = usePathname()
+
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState("")
   const [loading, setLoading] = useState(false)
   const [mode, setMode] = useState<Mode>("general")
-  const [lang, setLang] = useState<Lang>("es")
   const [showChat, setShowChat] = useState(false)
   const [copied, setCopied] = useState(false)
   const [mobileMenu, setMobileMenu] = useState(false)
@@ -79,8 +59,6 @@ export default function Home() {
   const inputRef = useRef<HTMLInputElement>(null)
   const recognitionRef = useRef<any>(null)
 
-  const t = LANG[lang]
-
   useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }) }, [messages])
 
   useEffect(() => {
@@ -97,7 +75,7 @@ export default function Home() {
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
     if (!SpeechRecognition) return
     const recognition = new SpeechRecognition()
-    recognition.lang = lang === "es" ? "es-ES" : "en-US"
+    recognition.lang = locale === "es" ? "es-ES" : "en-US"
     recognition.continuous = false
     recognition.interimResults = false
     recognition.onresult = (e: any) => {
@@ -109,7 +87,7 @@ export default function Home() {
     recognitionRef.current = recognition
     recognition.start()
     setIsListening(true)
-  }, [lang])
+  }, [locale])
 
   const stopListening = useCallback(() => {
     recognitionRef.current?.stop()
@@ -121,13 +99,13 @@ export default function Home() {
     if (speakingId === id) { speechSynthesis.cancel(); setSpeakingId(null); return }
     speechSynthesis.cancel()
     const utterance = new SpeechSynthesisUtterance(text.replace(/[*#_\[\]]/g, ""))
-    utterance.lang = lang === "es" ? "es-ES" : "en-US"
+    utterance.lang = locale === "es" ? "es-ES" : "en-US"
     utterance.rate = 0.9
     utterance.onend = () => setSpeakingId(null)
     utterance.onerror = () => setSpeakingId(null)
     setSpeakingId(id)
     speechSynthesis.speak(utterance)
-  }, [lang, speakingId])
+  }, [locale, speakingId])
 
   const handleSend = async () => {
     if (!input.trim() || loading) return
@@ -142,7 +120,7 @@ export default function Home() {
       const data = await res.json()
       setMessages(p => [...p, { role: "assistant", content: data.response || data.error || "Error", mode }])
     } catch {
-      setMessages(p => [...p, { role: "assistant", content: lang === "es" ? "Error de conexión. Intenta de nuevo." : "Connection error. Try again.", mode }])
+      setMessages(p => [...p, { role: "assistant", content: t("connectionError"), mode }])
     } finally { setLoading(false) }
   }
 
@@ -151,12 +129,12 @@ export default function Home() {
   }
 
   const copyChat = () => {
-    const text = messages.map(m => `${m.role === "user" ? "Tú" : "Football Genius AI"}: ${m.content}`).join("\n\n")
+    const text = messages.map(m => `${m.role === "user" ? t("you") : t("agent")}: ${m.content}`).join("\n\n")
     navigator.clipboard.writeText(text).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000) })
   }
 
   const shareChat = async () => {
-    const text = messages.map(m => `${m.role === "user" ? "Tú" : "Football Genius AI"}: ${m.content}`).join("\n\n")
+    const text = messages.map(m => `${m.role === "user" ? t("you") : t("agent")}: ${m.content}`).join("\n\n")
     if (navigator.share) {
       try { await navigator.share({ title: "Football Genius AI", text }) } catch {}
     } else {
@@ -165,11 +143,15 @@ export default function Home() {
   }
 
   const exportChat = () => {
-    const text = messages.map(m => `### ${m.role === "user" ? "Tú" : "Football Genius AI"} (${m.mode})\n${m.content}`).join("\n\n")
+    const text = messages.map(m => `### ${m.role === "user" ? t("you") : t("agent")} (${m.mode})\n${m.content}`).join("\n\n")
     const a = document.createElement("a")
     a.href = URL.createObjectURL(new Blob([text], { type: "text/markdown" }))
     a.download = `football-genius-${new Date().toISOString().slice(0, 10)}.md`
     a.click()
+  }
+
+  const switchLocale = (l: "es" | "en") => {
+    router.replace(pathname, { locale: l })
   }
 
   return (
@@ -180,32 +162,32 @@ export default function Home() {
           <div className="flex items-center h-14 gap-4">
             <button onClick={() => { setShowChat(true); setTimeout(() => inputRef.current?.focus(), 100) }} className="flex items-center gap-2 shrink-0 group">
               <span className="text-xl">⚽</span>
-              <span className="font-bold text-sm tracking-tight text-text-primary group-hover:text-white transition-colors hidden sm:inline">{t.title}</span>
+              <span className="font-bold text-sm tracking-tight text-text-primary group-hover:text-white transition-colors hidden sm:inline">{t("title")}</span>
             </button>
             <nav className="hidden md:flex items-center gap-1 flex-1 overflow-x-auto py-1">
               {NAV_MODES.map(mid => (
                 <button key={mid} onClick={() => { setMode(mid); setShowChat(true); setTimeout(() => inputRef.current?.focus(), 100) }}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${mode === mid ? "bg-amber-500/10 text-amber-400" : "text-text-secondary hover:text-gray-200 hover:bg-gray-800/50"}`}>
-                  {MODE_META[mid].icon} {t.nav[NAV_MODES.indexOf(mid)]}
+                  {MODE_META[mid].icon} {t("nav")[NAV_MODES.indexOf(mid)]}
                 </button>
               ))}
             </nav>
             <div className="flex items-center gap-2 ml-auto">
               {/* Theme toggle */}
-              <button onClick={toggleTheme} className="p-1.5 rounded-lg text-xs text-text-secondary hover:text-gray-200 hover:bg-gray-800/50 transition-all" title={dark ? t.darkTitle : t.lightTitle}>
+              <button onClick={toggleTheme} className="p-1.5 rounded-lg text-xs text-text-secondary hover:text-gray-200 hover:bg-gray-800/50 transition-all" title={dark ? t("darkTitle") : t("lightTitle")}>
                 {dark ? "☀️" : "🌙"}
               </button>
               {/* Lang */}
               <div className="flex items-center bg-gray-800/50 rounded-lg p-0.5 border border-gray-700/50">
-                <button onClick={() => setLang("es")} className={`px-2 py-1 rounded-md text-xs font-medium transition-all ${lang === "es" ? "bg-amber-500 text-black" : "text-text-secondary hover:text-gray-200"}`}>ES</button>
-                <button onClick={() => setLang("en")} className={`px-2 py-1 rounded-md text-xs font-medium transition-all ${lang === "en" ? "bg-amber-500 text-black" : "text-text-secondary hover:text-gray-200"}`}>EN</button>
+                <button onClick={() => switchLocale("es")} className={`px-2 py-1 rounded-md text-xs font-medium transition-all ${locale === "es" ? "bg-amber-500 text-black" : "text-text-secondary hover:text-gray-200"}`}>ES</button>
+                <button onClick={() => switchLocale("en")} className={`px-2 py-1 rounded-md text-xs font-medium transition-all ${locale === "en" ? "bg-amber-500 text-black" : "text-text-secondary hover:text-gray-200"}`}>EN</button>
               </div>
               {showChat && messages.length > 0 && (
                 <div className="flex items-center gap-1">
-                  <button onClick={shareChat} className="p-1.5 rounded-lg text-xs text-text-secondary hover:text-gray-200 hover:bg-gray-800/50 transition-all" title={t.share}>📤</button>
-                  <button onClick={copyChat} className="p-1.5 rounded-lg text-xs text-text-secondary hover:text-gray-200 hover:bg-gray-800/50 transition-all" title={t.copied}>{copied ? "✅" : "📋"}</button>
-                  <button onClick={exportChat} className="p-1.5 rounded-lg text-xs text-text-secondary hover:text-gray-200 hover:bg-gray-800/50 transition-all" title="Exportar">📥</button>
-                  <button onClick={() => { setMessages([]); setShowChat(false); speechSynthesis.cancel() }} className="p-1.5 rounded-lg text-xs text-text-secondary hover:text-gray-200 hover:bg-gray-800/50 transition-all" title={t.newChat}>✕</button>
+                  <button onClick={shareChat} className="p-1.5 rounded-lg text-xs text-text-secondary hover:text-gray-200 hover:bg-gray-800/50 transition-all" title={t("share")}>📤</button>
+                  <button onClick={copyChat} className="p-1.5 rounded-lg text-xs text-text-secondary hover:text-gray-200 hover:bg-gray-800/50 transition-all" title={t("copied")}>{copied ? "✅" : "📋"}</button>
+                  <button onClick={exportChat} className="p-1.5 rounded-lg text-xs text-text-secondary hover:text-gray-200 hover:bg-gray-800/50 transition-all" title={t("export")}>📥</button>
+                  <button onClick={() => { setMessages([]); setShowChat(false); speechSynthesis.cancel() }} className="p-1.5 rounded-lg text-xs text-text-secondary hover:text-gray-200 hover:bg-gray-800/50 transition-all" title={t("newChat")}>✕</button>
                 </div>
               )}
               <button onClick={() => setMobileMenu(!mobileMenu)} className="md:hidden p-1.5 rounded-lg text-text-secondary hover:text-gray-200 hover:bg-gray-800/50 transition-all">
@@ -221,7 +203,7 @@ export default function Home() {
                 <button key={mid} onClick={() => { setMode(mid); setShowChat(true); setMobileMenu(false); setTimeout(() => inputRef.current?.focus(), 100) }}
                   className={`px-2 py-2 rounded-lg text-xs font-medium transition-all text-center ${mode === mid ? "bg-amber-500/10 text-amber-400" : "text-text-secondary hover:text-gray-200"}`}>
                   <div className="text-base mb-0.5">{MODE_META[mid].icon}</div>
-                  <div>{t.nav[NAV_MODES.indexOf(mid)]}</div>
+                  <div>{t("nav")[NAV_MODES.indexOf(mid)]}</div>
                 </button>
               ))}
             </div>
@@ -243,21 +225,21 @@ export default function Home() {
                   <span className="text-3xl">⚽</span>
                 </button>
                 <h1 className="text-4xl sm:text-6xl md:text-7xl font-black tracking-tight mb-4">
-                  <span className="bg-gradient-to-r from-amber-400 to-yellow-500 bg-clip-text text-transparent">{t.title}</span>
+                  <span className="bg-gradient-to-r from-amber-400 to-yellow-500 bg-clip-text text-transparent">{t("title")}</span>
                 </h1>
-                <p className="text-base sm:text-lg text-text-secondary max-w-2xl mx-auto leading-relaxed mb-8">{t.desc}</p>
+                <p className="text-base sm:text-lg text-text-secondary max-w-2xl mx-auto leading-relaxed mb-8">{t("desc")}</p>
                 <div className="flex flex-wrap items-center justify-center gap-3">
                   <button onClick={() => { setShowChat(true); setTimeout(() => inputRef.current?.focus(), 100) }}
                     className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold text-sm bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-600 hover:to-yellow-700 text-black shadow-lg shadow-amber-500/20 transition-all">
-                    ⚡ {t.cta}
+                    ⚡ {t("cta")}
                   </button>
                   <button onClick={() => document.getElementById("modes")?.scrollIntoView({ behavior: "smooth" })}
                     className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-medium text-sm border border-gray-600 text-gray-300 hover:bg-gray-800 transition-all">
-                    📋 {t.modesBtn}
+                    📋 {t("modesBtn")}
                   </button>
                 </div>
                 <div className="flex justify-center gap-8 sm:gap-12 mt-12">
-                  {[{ value: PLAYERS.length, label: t.stats[0], icon: "👤" }, { value: PLAYERS.length, label: t.stats[1], icon: "🏟️" }, { value: MODES.length, label: t.stats[2], icon: "🎯" }].map(s => (
+                  {[{ value: PLAYERS.length, label: t("stats")[0], icon: "👤" }, { value: PLAYERS.length, label: t("stats")[1], icon: "🏟️" }, { value: MODES.length, label: t("stats")[2], icon: "🎯" }].map(s => (
                     <button key={s.label} onClick={() => { setShowChat(true); setTimeout(() => inputRef.current?.focus(), 100) }} className="text-center group">
                       <div className="text-3xl sm:text-4xl font-black text-text-primary group-hover:text-amber-400 transition-colors">{s.value}</div>
                       <div className="text-xs text-gray-500 mt-1 group-hover:text-text-secondary transition-colors">{s.icon} {s.label}</div>
@@ -269,8 +251,8 @@ export default function Home() {
             <section id="modes" className="py-16 px-4 border-t border-gray-800/50">
               <div className="max-w-7xl mx-auto">
                 <div className="text-center mb-10">
-                  <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-3">{t.modesTitle}</h2>
-                  <p className="text-sm text-text-secondary">{t.modesDesc}</p>
+                  <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-3">{t("modesTitle")}</h2>
+                  <p className="text-sm text-text-secondary">{t("modesDesc")}</p>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
                   {MODES.map(m => {
@@ -289,12 +271,9 @@ export default function Home() {
             </section>
             <section className="py-12 px-4 border-t border-gray-800/50 bg-gray-900/20">
               <div className="max-w-3xl mx-auto text-center">
-                <p className="text-sm text-text-secondary mb-4">{lang === "es" ? "Prueba estas preguntas:" : "Try these questions:"}</p>
+                <p className="text-sm text-text-secondary mb-4">{t("tryQuestions")}</p>
                 <div className="flex flex-wrap gap-2 justify-center">
-                  {(lang === "es"
-                    ? ["Compara a Messi y Cristiano", "Analiza tácticamente al Real Madrid", "¿Quién es el GOAT?", "Scout de Lamine Yamal"]
-                    : ["Compare Messi and Ronaldo", "Tactical analysis of Real Madrid", "Who is the GOAT?", "Scout Lamine Yamal"]
-                  ).map(s => (
+                  {(t.raw("questions") as string[]).map((s: string) => (
                     <button key={s} onClick={() => { setInput(s); setShowChat(true); setTimeout(() => inputRef.current?.focus(), 100) }}
                       className="px-3.5 py-2 text-xs rounded-lg bg-gray-800/50 text-text-secondary hover:text-gray-200 hover:bg-gray-700/50 transition-all border border-gray-700/50">{s}</button>
                   ))}
@@ -303,10 +282,10 @@ export default function Home() {
             </section>
             <footer className="border-t border-gray-800/50 bg-canvas/80 py-8 px-4">
               <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div className="flex items-center gap-2 text-sm text-gray-500"><span>⚽</span><span>{t.title}</span></div>
+                <div className="flex items-center gap-2 text-sm text-gray-500"><span>⚽</span><span>{t("title")}</span></div>
                 <div className="flex items-center gap-4 text-xs text-gray-600">
                   <span>© 2026</span><span>·</span>
-                  <button onClick={() => { setShowChat(true); setTimeout(() => inputRef.current?.focus(), 100) }} className="hover:text-text-secondary transition-colors">{t.newChat}</button>
+                  <button onClick={() => { setShowChat(true); setTimeout(() => inputRef.current?.focus(), 100) }} className="hover:text-text-secondary transition-colors">{t("newChat")}</button>
                   <span>·</span><span>Ctrl+Shift+N</span>
                 </div>
               </div>
@@ -319,8 +298,8 @@ export default function Home() {
                 <div className="flex items-center justify-center h-full min-h-[60vh] text-center">
                   <div>
                     <div className="text-6xl mb-4">⚽</div>
-                    <p className="text-text-secondary text-sm">{t.startChat}</p>
-                    <p className="text-text-muted text-xs mt-2">{lang === "es" ? `Modo actual: ${MODES.find(m => m.id === mode)?.name}` : `Current mode: ${MODES.find(m => m.id === mode)?.name}`}</p>
+                    <p className="text-text-secondary text-sm">{t("startChat")}</p>
+                    <p className="text-text-muted text-xs mt-2">{t("currentMode", { mode: MODES.find(m => m.id === mode)?.name || "" })}</p>
                   </div>
                 </div>
               )}
@@ -338,7 +317,7 @@ export default function Home() {
                       {msg.role === "assistant" && (
                         <button onClick={() => speak(msg.content, i)}
                           className="text-[10px] text-gray-600 hover:text-amber-400 transition-colors flex items-center gap-1">
-                          {speakingId === i ? "🔊" : "🔈"} {speakingId === i ? (lang === "es" ? "Detener" : "Stop") : (lang === "es" ? "Leer" : "Read")}
+                          {speakingId === i ? "🔊" : "🔈"} {speakingId === i ? t("detener") : t("leer")}
                         </button>
                       )}
                     </div>
@@ -358,18 +337,18 @@ export default function Home() {
               <div className="max-w-4xl mx-auto flex gap-2.5 items-center">
                 <div className="flex-1 relative flex items-center gap-2">
                   <input ref={inputRef} value={input} onChange={e => setInput(e.target.value)} onKeyDown={handleKeyDown}
-                    placeholder={t.followUp}
+                    placeholder={t("followUp")}
                     className="flex-1 px-4 py-2.5 rounded-xl bg-gray-800/50 border border-gray-700/50 text-text-primary placeholder-gray-500 focus:outline-none focus:border-amber-500/40 focus:bg-gray-800/80 text-sm transition-all"
                     disabled={loading} />
                   <button onClick={isListening ? stopListening : startListening}
                     className={`p-2.5 rounded-xl transition-all ${isListening ? "bg-red-500/20 text-red-400 border border-red-500/30 animate-pulse" : "bg-gray-800/50 text-text-secondary hover:text-gray-200 hover:bg-gray-700/50 border border-gray-700/50"}`}
-                    title={isListening ? t.listening : t.voiceTitle}>
+                    title={isListening ? t("listening") : t("voiceTitle")}>
                     🎤
                   </button>
                 </div>
                 <button onClick={handleSend} disabled={loading || !input.trim()}
                   className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-600 hover:to-yellow-700 text-black font-bold text-sm disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-lg shadow-amber-500/10">
-                  {loading ? <span className="flex items-center gap-1"><span className="animate-pulse">···</span></span> : t.send}
+                  {loading ? <span className="flex items-center gap-1"><span className="animate-pulse">···</span></span> : t("send")}
                 </button>
               </div>
             </div>
