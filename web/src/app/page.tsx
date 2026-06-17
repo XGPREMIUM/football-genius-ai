@@ -13,6 +13,8 @@ const LANG = {
     stats: ["Jugadores", "Equipos", "Modos"],
     nav: ["General", "Scout", "Táctico", "GOAT", "Enciclopedia", "Coach", "Mercado"],
     listening: "Escuchando...", speak: "Leer", stop: "Detener", share: "Compartir chat", copied: "¡Copiado!",
+    modesBtn: "Modos de Análisis", darkTitle: "Modo claro", lightTitle: "Modo oscuro", voiceTitle: "🎤 Voz",
+    startChat: "Escribe tu primera pregunta o usa el micrófono",
   },
   en: {
     title: "Football Genius AI", tagline: "The most complete AI football agent in the world",
@@ -22,6 +24,8 @@ const LANG = {
     stats: ["Players", "Teams", "Modes"],
     nav: ["General", "Scout", "Tactical", "GOAT", "Encyclopedia", "Coach", "Market"],
     listening: "Listening...", speak: "Read", stop: "Stop", share: "Share chat", copied: "Copied!",
+    modesBtn: "Analysis Modes", darkTitle: "Light mode", lightTitle: "Dark mode", voiceTitle: "🎤 Voice",
+    startChat: "Type your first question or use the microphone",
   },
 }
 
@@ -188,7 +192,7 @@ export default function Home() {
             </nav>
             <div className="flex items-center gap-2 ml-auto">
               {/* Theme toggle */}
-              <button onClick={toggleTheme} className="p-1.5 rounded-lg text-xs text-text-secondary hover:text-gray-200 hover:bg-gray-800/50 transition-all" title={dark ? "Modo claro" : "Modo oscuro"}>
+              <button onClick={toggleTheme} className="p-1.5 rounded-lg text-xs text-text-secondary hover:text-gray-200 hover:bg-gray-800/50 transition-all" title={dark ? t.darkTitle : t.lightTitle}>
                 {dark ? "☀️" : "🌙"}
               </button>
               {/* Lang */}
@@ -226,7 +230,7 @@ export default function Home() {
       </header>
 
       <main className="flex-1 flex flex-col min-h-0 relative">
-        {!showChat || messages.length === 0 ? (
+        {!showChat ? (
           <>
             <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950" />
@@ -249,7 +253,7 @@ export default function Home() {
                   </button>
                   <button onClick={() => document.getElementById("modes")?.scrollIntoView({ behavior: "smooth" })}
                     className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-medium text-sm border border-gray-600 text-gray-300 hover:bg-gray-800 transition-all">
-                    📋 Modos de Juego
+                    📋 {t.modesBtn}
                   </button>
                 </div>
                 <div className="flex justify-center gap-8 sm:gap-12 mt-12">
@@ -311,6 +315,15 @@ export default function Home() {
         ) : (
           <div className="flex-1 flex flex-col min-h-0">
             <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 max-w-4xl mx-auto w-full">
+              {messages.length === 0 && (
+                <div className="flex items-center justify-center h-full min-h-[60vh] text-center">
+                  <div>
+                    <div className="text-6xl mb-4">⚽</div>
+                    <p className="text-text-secondary text-sm">{t.startChat}</p>
+                    <p className="text-text-muted text-xs mt-2">{lang === "es" ? `Modo actual: ${MODES.find(m => m.id === mode)?.name}` : `Current mode: ${MODES.find(m => m.id === mode)?.name}`}</p>
+                  </div>
+                </div>
+              )}
               {messages.map((msg, i) => (
                 <div key={i} className={`message-enter flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
                   <div className={`max-w-[88%] sm:max-w-[72%] rounded-2xl px-4 py-3 ${msg.role === "user" ? "bg-amber-500/10 border border-amber-500/20 text-text-primary rounded-br-sm" : "bg-gray-900/50 border border-gray-800/50 text-gray-300 rounded-bl-sm"}`}>
@@ -350,7 +363,7 @@ export default function Home() {
                     disabled={loading} />
                   <button onClick={isListening ? stopListening : startListening}
                     className={`p-2.5 rounded-xl transition-all ${isListening ? "bg-red-500/20 text-red-400 border border-red-500/30 animate-pulse" : "bg-gray-800/50 text-text-secondary hover:text-gray-200 hover:bg-gray-700/50 border border-gray-700/50"}`}
-                    title={isListening ? t.listening : "🎤 Voz"}>
+                    title={isListening ? t.listening : t.voiceTitle}>
                     🎤
                   </button>
                 </div>
