@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from "react"
 import { useTranslations, useLocale } from "next-intl"
 import { MODES } from "@/lib/data"
 import type { Message, Mode } from "@/lib/types"
+import Toast, { showToast } from "@/components/Toast"
 
 const MODE_META: Record<Mode, { icon: string; gradient: string }> = {
   general: { icon: "🎙️", gradient: "from-amber-400 to-yellow-500" },
@@ -61,12 +62,25 @@ export default function ChatView({
                     <span>{MODES.find(m => m.id === msg.mode)?.name}</span>
                   </div>
                 ) : <div />}
-                {msg.role === "assistant" && (
-                  <button onClick={() => onSpeak(msg.content, i)}
-                    className="text-[10px] text-gray-600 hover:text-amber-400 transition-colors flex items-center gap-1">
-                    {speakingId === i ? "🔊" : "🔈"} {speakingId === i ? t("detener") : t("leer")}
-                  </button>
-                )}
+                <div className="flex items-center gap-2">
+                  {msg.role === "assistant" && (
+                    <>
+                      <button onClick={() => onSpeak(msg.content, i)}
+                        className="text-[10px] text-gray-600 hover:text-amber-400 transition-colors flex items-center gap-1">
+                        {speakingId === i ? "🔊" : "🔈"}
+                      </button>
+                      <button onClick={() => { navigator.clipboard.writeText(msg.content); showToast(t("copied"), "success") }}
+                        className="text-[10px] text-gray-600 hover:text-amber-400 transition-colors" title={t("copied")}>📋</button>
+                      <button onClick={() => {
+                        const text = `### ${t("agent")} (${msg.mode || mode})\n${msg.content}`
+                        const a = document.createElement("a")
+                        a.href = URL.createObjectURL(new Blob([text], { type: "text/markdown" }))
+                        a.download = `football-genius-msg-${i+1}.md`
+                        a.click()
+                      }} className="text-[10px] text-gray-600 hover:text-amber-400 transition-colors" title={t("export")}>📥</button>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -80,7 +94,15 @@ export default function ChatView({
         )}
         <div ref={messagesEndRef} />
       </div>
-      <div className="flex-none border-t border-gray-800/50 bg-canvas px-4 py-3">
+      <div className="flex-none border-t border-gray-800/50 bg-canvas px-4 py-2">
+        {/* Chat action toolbar */}
+        {messages.length > 0 && (
+          <div className="max-w-4xl mx-auto flex items-center gap-2 pb-2">
+            <button onClick={onShare} className="p-1.5 rounded-lg text-xs text-text-secondary hover:text-gray-200 hover:bg-gray-800/50 transition-all" title={t("share")}>📤 {t("share")}</button>
+            <button onClick={onCopy} className="p-1.5 rounded-lg text-xs text-text-secondary hover:text-gray-200 hover:bg-gray-800/50 transition-all" title={t("copied")}>{copied ? "✅" : "📋"} {t("copied")}</button>
+            <button onClick={onExport} className="p-1.5 rounded-lg text-xs text-text-secondary hover:text-gray-200 hover:bg-gray-800/50 transition-all" title={t("export")}>📥 {t("export")}</button>
+          </div>
+        )}
         <div className="max-w-4xl mx-auto flex gap-2.5 items-center">
           <div className="flex-1 relative flex items-center gap-2">
             <input ref={inputRef} value={input} onChange={e => onInputChange(e.target.value)} onKeyDown={onKeyDown}

@@ -253,10 +253,11 @@ export default function Home() {
               <span className="font-bold text-sm tracking-tight text-text-primary group-hover:text-white transition-colors hidden sm:inline">{t("title")}</span>
             </button>
             <nav className="hidden md:flex items-center gap-1 flex-1 overflow-x-auto py-1">
-              {NAV_MODES.map(mid => (
+              {NAV_MODES.map((mid, i) => (
                 <button key={mid} onClick={() => { setMode(mid); setShowChat(true); setTimeout(() => inputRef.current?.focus(), 100) }}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${mode === mid ? "bg-amber-500/10 text-amber-400" : "text-text-secondary hover:text-gray-200 hover:bg-gray-800/50"}`}>
-                  {MODE_META[mid].icon} {t("nav")[NAV_MODES.indexOf(mid)]}
+                  title={t("nav")[i]}
+                  className={`px-2 py-1.5 rounded-lg text-sm transition-all ${mode === mid ? "bg-amber-500/10 text-amber-400" : "text-text-secondary hover:text-gray-200 hover:bg-gray-800/50"}`}>
+                  {MODE_META[mid].icon}
                 </button>
               ))}
             </nav>
@@ -267,17 +268,10 @@ export default function Home() {
               </button>
               {/* Lang */}
               <div className="flex items-center bg-gray-800/50 rounded-lg p-0.5 border border-gray-700/50">
-                <button onClick={() => switchLocale("es")} className={`px-2 py-1 rounded-md text-xs font-medium transition-all ${locale === "es" ? "bg-amber-500 text-black" : "text-text-secondary hover:text-gray-200"}`}>ES</button>
-                <button onClick={() => switchLocale("en")} className={`px-2 py-1 rounded-md text-xs font-medium transition-all ${locale === "en" ? "bg-amber-500 text-black" : "text-text-secondary hover:text-gray-200"}`}>EN</button>
+                <button onClick={() => switchLocale("es")} className={`px-2 py-1 rounded-md text-xs font-medium transition-all ${locale === "es" ? "bg-amber-500 text-black" : "text-text-secondary hover:text-gray-200"}`} title="Español">ES</button>
+                <button onClick={() => switchLocale("en")} className={`px-2 py-1 rounded-md text-xs font-medium transition-all ${locale === "en" ? "bg-amber-500 text-black" : "text-text-secondary hover:text-gray-200"}`} title="English">EN</button>
               </div>
-              {showChat && messages.length > 0 && (
-                <div className="flex items-center gap-1">
-                  <button onClick={shareChat} className="p-1.5 rounded-lg text-xs text-text-secondary hover:text-gray-200 hover:bg-gray-800/50 transition-all" title={t("share")}>📤</button>
-                  <button onClick={copyChat} className="p-1.5 rounded-lg text-xs text-text-secondary hover:text-gray-200 hover:bg-gray-800/50 transition-all" title={t("copied")}>{copied ? "✅" : "📋"}</button>
-                  <button onClick={exportChat} className="p-1.5 rounded-lg text-xs text-text-secondary hover:text-gray-200 hover:bg-gray-800/50 transition-all" title={t("export")}>📥</button>
-                  <button onClick={startNewChat} className="p-1.5 rounded-lg text-xs text-text-secondary hover:text-gray-200 hover:bg-gray-800/50 transition-all" title={t("newChat")}>✕</button>
-                </div>
-              )}
+              {showChat && messages.length > 0 && (<button onClick={startNewChat} className="p-1.5 rounded-lg text-xs text-text-secondary hover:text-gray-200 hover:bg-gray-800/50 transition-all" title={t("newChat")}>✕</button>)}
               <button onClick={() => setMobileMenu(!mobileMenu)} className="md:hidden p-1.5 rounded-lg text-text-secondary hover:text-gray-200 hover:bg-gray-800/50 transition-all">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
               </button>
@@ -286,12 +280,12 @@ export default function Home() {
         </div>
         {mobileMenu && (
           <div className="md:hidden border-t border-gray-800/50 bg-gray-900/95 backdrop-blur-xl">
-            <div className="max-w-7xl mx-auto px-4 py-3 grid grid-cols-3 gap-1">
-              {NAV_MODES.map(mid => (
+            <div className="max-w-7xl mx-auto px-4 py-3 grid grid-cols-4 gap-1">
+              {NAV_MODES.map((mid, i) => (
                 <button key={mid} onClick={() => { setMode(mid); setShowChat(true); setMobileMenu(false); setTimeout(() => inputRef.current?.focus(), 100) }}
-                  className={`px-2 py-2 rounded-lg text-xs font-medium transition-all text-center ${mode === mid ? "bg-amber-500/10 text-amber-400" : "text-text-secondary hover:text-gray-200"}`}>
-                  <div className="text-base mb-0.5">{MODE_META[mid].icon}</div>
-                  <div>{t("nav")[NAV_MODES.indexOf(mid)]}</div>
+                  title={t("nav")[i]}
+                  className={`px-2 py-3 rounded-lg text-sm transition-all text-center ${mode === mid ? "bg-amber-500/10 text-amber-400" : "text-text-secondary hover:text-gray-200"}`}>
+                  <div className="text-lg">{MODE_META[mid].icon}</div>
                 </button>
               ))}
             </div>
