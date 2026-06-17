@@ -7,6 +7,7 @@ import { MODES } from "@/lib/data"
 import { fetchPlayers, fetchTeams } from "@/lib/api"
 import Toast, { showToast } from "@/components/Toast"
 import type { Message, Mode } from "@/lib/types"
+import { supabase } from "@/lib/supabase"
 
 const ChatView = lazy(() => import("@/components/ChatView"))
 
@@ -47,6 +48,46 @@ export default function Home() {
   const [statsLoaded, setStatsLoaded] = useState(false)
   const chatContainerRef = useRef<HTMLDivElement>(null)
   const [userScrolledUp, setUserScrolledUp] = useState(false)
+  const [sessionId, setSessionId] = useState<string>("")
+
+  useEffect(() => {
+    let sid = localStorage.getItem("session_id")
+    if (!sid) { sid = crypto.randomUUID(); localStorage.setItem("session_id", sid) }
+    setSessionId(sid)
+  }, [])
+
+  useEffect(() => {
+    if (!sessionId) return
+    supabase
+      .from("conversations")
+      .select("role, content, mode, created_at")
+      .eq("session_id", sessionId)
+      .order("created_at", { ascending: true })
+      .then(({ data, error }) => {
+        if (data && !error) {
+          setMessages(data.map(m => ({ role: m.role as "user" | "assistant", content: m.content, mode: m.mode as Mode })))
+          if (data.length > 0) setShowChat(true)
+        }
+      })
+      .catch(() => {})
+  }, [sessionId])
+
+  const saveMessage = useCallback(async (msg: Message) => {
+    if (!sessionId) return
+    try {
+      await fetch("/api/conversations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          session_id: sessionId,
+          role: msg.role,
+          content: msg.content,
+          mode: msg.mode || mode,
+          language: locale,
+        }),
+      })
+    } catch {}
+  }, [sessionId, mode, locale])
 
   useEffect(() => {
     fetchPlayers().then(p => { setPlayerCount(p.length); setStatsLoaded(true) }).catch(() => setStatsLoaded(true))
@@ -88,14 +129,26 @@ export default function Home() {
     return () => el.removeEventListener("scroll", handler)
   }, [])
 
+  const startNewChat = useCallback(() => {
+    if (sessionId) {
+      fetch(`/api/conversations?session_id=${sessionId}`, { method: "DELETE" }).catch(() => {})
+    }
+    const newId = crypto.randomUUID()
+    localStorage.setItem("session_id", newId)
+    setSessionId(newId)
+    setMessages([])
+    setShowChat(false)
+    speechSynthesis.cancel()
+  }, [sessionId])
+
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === "n") { e.preventDefault(); setMessages([]); setShowChat(false) }
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === "n") { e.preventDefault(); startNewChat() }
       if (e.key === "/" && document.activeElement !== inputRef.current && showChat) { e.preventDefault(); inputRef.current?.focus() }
     }
     window.addEventListener("keydown", handler)
     return () => window.removeEventListener("keydown", handler)
-  }, [showChat])
+  }, [showChat, startNewChat])
 
   // Speech Recognition
   const startListening = useCallback(() => {
@@ -138,6 +191,7 @@ export default function Home() {
     if (!input.trim() || loading) return
     const userMsg: Message = { role: "user", content: input.trim(), mode }
     setMessages(p => [...p, userMsg])
+    saveMessage(userMsg)
     setInput(""); setLoading(true); setShowChat(true)
     try {
       const res = await fetch("/api/chat", {
@@ -146,7 +200,9 @@ export default function Home() {
       })
       const data = await res.json()
       if (data.error) throw new Error(data.error)
-      setMessages(p => [...p, { role: "assistant", content: data.response, mode }])
+      const assistantMsg: Message = { role: "assistant", content: data.response, mode }
+      setMessages(p => [...p, assistantMsg])
+      saveMessage(assistantMsg)
     } catch (e: any) {
       const errMsg = e?.message || t("connectionError")
       setMessages(p => [...p, { role: "assistant", content: errMsg, mode }])
@@ -218,7 +274,7 @@ export default function Home() {
                   <button onClick={shareChat} className="p-1.5 rounded-lg text-xs text-text-secondary hover:text-gray-200 hover:bg-gray-800/50 transition-all" title={t("share")}>📤</button>
                   <button onClick={copyChat} className="p-1.5 rounded-lg text-xs text-text-secondary hover:text-gray-200 hover:bg-gray-800/50 transition-all" title={t("copied")}>{copied ? "✅" : "📋"}</button>
                   <button onClick={exportChat} className="p-1.5 rounded-lg text-xs text-text-secondary hover:text-gray-200 hover:bg-gray-800/50 transition-all" title={t("export")}>📥</button>
-                  <button onClick={() => { setMessages([]); setShowChat(false); speechSynthesis.cancel() }} className="p-1.5 rounded-lg text-xs text-text-secondary hover:text-gray-200 hover:bg-gray-800/50 transition-all" title={t("newChat")}>✕</button>
+                  <button onClick={startNewChat} className="p-1.5 rounded-lg text-xs text-text-secondary hover:text-gray-200 hover:bg-gray-800/50 transition-all" title={t("newChat")}>✕</button>
                 </div>
               )}
               <button onClick={() => setMobileMenu(!mobileMenu)} className="md:hidden p-1.5 rounded-lg text-text-secondary hover:text-gray-200 hover:bg-gray-800/50 transition-all">
@@ -333,7 +389,7 @@ export default function Home() {
               messagesEndRef={messagesEndRef as React.RefObject<HTMLDivElement | null>}
               onSend={handleSend} onInputChange={setInput} onKeyDown={handleKeyDown}
               onSpeak={speak} onCopy={copyChat} onShare={shareChat} onExport={exportChat}
-              onNewChat={() => { setMessages([]); setShowChat(false); speechSynthesis.cancel() }}
+              onNewChat={startNewChat}
               isListening={isListening} onStartListening={startListening} onStopListening={stopListening}
               input={input} copied={copied} t={t}
             />
