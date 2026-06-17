@@ -44,7 +44,7 @@ export async function askAgent(
         "HTTP-Referer": origin || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
       },
       body: JSON.stringify({
-        model: "meta-llama/llama-3.3-70b-instruct:free",
+        model: "deepseek/deepseek-v4-flash",
         messages,
         max_tokens: 1500,
         temperature: 0.7,
