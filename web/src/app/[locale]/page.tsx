@@ -3,7 +3,8 @@
 import { useState, useRef, useEffect, useCallback } from "react"
 import { useTranslations, useLocale } from "next-intl"
 import { useRouter, usePathname } from "@/i18n/routing"
-import { PLAYERS, MODES } from "@/lib/data"
+import { MODES } from "@/lib/data"
+import { fetchPlayers, fetchTeams } from "@/lib/api"
 import type { Message, Mode } from "@/lib/types"
 
 const NAV_MODES = ["general", "scout", "tactical", "goat", "encyclopedia", "coach", "transfer_market"] as Mode[]
@@ -38,6 +39,13 @@ export default function Home() {
   const [mobileMenu, setMobileMenu] = useState(false)
   const [isListening, setIsListening] = useState(false)
   const [dark, setDark] = useState(true)
+  const [playerCount, setPlayerCount] = useState<number | null>(null)
+  const [teamCount, setTeamCount] = useState<number | null>(null)
+
+  useEffect(() => {
+    fetchPlayers().then(p => setPlayerCount(p.length)).catch(() => {})
+    fetchTeams().then(t => setTeamCount(t.length)).catch(() => {})
+  }, [])
 
   useEffect(() => {
     const saved = localStorage.getItem("theme")
@@ -239,7 +247,7 @@ export default function Home() {
                   </button>
                 </div>
                 <div className="flex justify-center gap-8 sm:gap-12 mt-12">
-                  {[{ value: PLAYERS.length, label: t("stats")[0], icon: "👤" }, { value: PLAYERS.length, label: t("stats")[1], icon: "🏟️" }, { value: MODES.length, label: t("stats")[2], icon: "🎯" }].map(s => (
+                  {[{ value: playerCount ?? "...", label: t("stats")[0], icon: "👤" }, { value: teamCount ?? "...", label: t("stats")[1], icon: "🏟️" }, { value: MODES.length, label: t("stats")[2], icon: "🎯" }].map(s => (
                     <button key={s.label} onClick={() => { setShowChat(true); setTimeout(() => inputRef.current?.focus(), 100) }} className="text-center group">
                       <div className="text-3xl sm:text-4xl font-black text-text-primary group-hover:text-amber-400 transition-colors">{s.value}</div>
                       <div className="text-xs text-gray-500 mt-1 group-hover:text-text-secondary transition-colors">{s.icon} {s.label}</div>
