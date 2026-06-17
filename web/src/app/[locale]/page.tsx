@@ -1,12 +1,14 @@
 "use client"
 
-import { useState, useRef, useEffect, useCallback } from "react"
+import { useState, useRef, useEffect, useCallback, lazy, Suspense } from "react"
 import { useTranslations, useLocale } from "next-intl"
 import { useRouter, usePathname } from "@/i18n/routing"
 import { MODES } from "@/lib/data"
 import { fetchPlayers, fetchTeams } from "@/lib/api"
 import Toast, { showToast } from "@/components/Toast"
 import type { Message, Mode } from "@/lib/types"
+
+const ChatView = lazy(() => import("@/components/ChatView"))
 
 const NAV_MODES = ["general", "scout", "tactical", "goat", "encyclopedia", "coach", "transfer_market"] as Mode[]
 
@@ -323,67 +325,19 @@ export default function Home() {
             </footer>
           </>
         ) : (
-          <div className="flex-1 flex flex-col min-h-0">
-            <div ref={chatContainerRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-3 max-w-4xl mx-auto w-full scrollbar-thin">
-              {messages.length === 0 && (
-                <div className="flex items-center justify-center h-full min-h-[60vh] text-center">
-                  <div>
-                    <div className="text-6xl mb-4">⚽</div>
-                    <p className="text-text-secondary text-sm">{t("startChat")}</p>
-                    <p className="text-text-muted text-xs mt-2">{t("currentMode", { mode: MODES.find(m => m.id === mode)?.name || "" })}</p>
-                  </div>
-                </div>
-              )}
-              {messages.map((msg, i) => (
-                <div key={i} className={`message-enter flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                  <div className={`max-w-[88%] sm:max-w-[72%] rounded-2xl px-4 py-3 ${msg.role === "user" ? "bg-amber-500/10 border border-amber-500/20 text-text-primary rounded-br-sm" : "bg-gray-900/50 border border-gray-800/50 text-gray-300 rounded-bl-sm"}`}>
-                    <div className="text-sm leading-relaxed whitespace-pre-wrap">{msg.content}</div>
-                    <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-800/50">
-                      {msg.role === "assistant" ? (
-                        <div className="text-[10px] text-gray-600 flex items-center gap-1">
-                          <span>{msg.mode ? MODE_META[msg.mode]?.icon : "🎙️"}</span>
-                          <span>{MODES.find(m => m.id === msg.mode)?.name}</span>
-                        </div>
-                      ) : <div />}
-                      {msg.role === "assistant" && (
-                        <button onClick={() => speak(msg.content, i)}
-                          className="text-[10px] text-gray-600 hover:text-amber-400 transition-colors flex items-center gap-1">
-                          {speakingId === i ? "🔊" : "🔈"} {speakingId === i ? t("detener") : t("leer")}
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
-              {loading && (
-                <div className="flex justify-start message-enter">
-                  <div className="bg-gray-900/50 border border-gray-800/50 rounded-2xl rounded-bl-sm px-4 py-3.5">
-                    <div className="typing-indicator"><span></span><span></span><span></span></div>
-                  </div>
-                </div>
-              )}
-              <div ref={messagesEndRef} />
-            </div>
-            <div className="flex-none border-t border-gray-800/50 bg-canvas px-4 py-3">
-              <div className="max-w-4xl mx-auto flex gap-2.5 items-center">
-                <div className="flex-1 relative flex items-center gap-2">
-                  <input ref={inputRef} value={input} onChange={e => setInput(e.target.value)} onKeyDown={handleKeyDown}
-                    placeholder={t("followUp")}
-                    className="flex-1 px-4 py-2.5 rounded-xl bg-gray-800/50 border border-gray-700/50 text-text-primary placeholder-gray-500 focus:outline-none focus:border-amber-500/40 focus:bg-gray-800/80 text-sm transition-all"
-                    disabled={loading} />
-                  <button onClick={isListening ? stopListening : startListening}
-                    className={`p-2.5 rounded-xl transition-all ${isListening ? "bg-red-500/20 text-red-400 border border-red-500/30 animate-pulse" : "bg-gray-800/50 text-text-secondary hover:text-gray-200 hover:bg-gray-700/50 border border-gray-700/50"}`}
-                    title={isListening ? t("listening") : t("voiceTitle")}>
-                    🎤
-                  </button>
-                </div>
-                <button onClick={handleSend} disabled={loading || !input.trim()}
-                  className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-600 hover:to-yellow-700 text-black font-bold text-sm disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-lg shadow-amber-500/10">
-                  {loading ? <span className="flex items-center gap-1"><span className="animate-pulse">···</span></span> : t("send")}
-                </button>
-              </div>
-            </div>
-          </div>
+          <Suspense fallback={<div className="flex-1 flex items-center justify-center"><div className="typing-indicator"><span></span><span></span><span></span></div></div>}>
+            <ChatView
+              messages={messages} loading={loading} mode={mode} lang={locale} speakingId={speakingId}
+              inputRef={inputRef as React.RefObject<HTMLInputElement | null>}
+              chatContainerRef={chatContainerRef as React.RefObject<HTMLDivElement | null>}
+              messagesEndRef={messagesEndRef as React.RefObject<HTMLDivElement | null>}
+              onSend={handleSend} onInputChange={setInput} onKeyDown={handleKeyDown}
+              onSpeak={speak} onCopy={copyChat} onShare={shareChat} onExport={exportChat}
+              onNewChat={() => { setMessages([]); setShowChat(false); speechSynthesis.cancel() }}
+              isListening={isListening} onStartListening={startListening} onStopListening={stopListening}
+              input={input} copied={copied} t={t}
+            />
+          </Suspense>
         )}
       </main>
 
