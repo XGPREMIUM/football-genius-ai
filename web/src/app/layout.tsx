@@ -8,10 +8,13 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es" className="dark">
-      <body className="min-h-screen bg-[#0d1117] text-[#e6edf3] antialiased">
-        {children}
-      </body>
+    <html lang="es" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{
+          __html: `document.documentElement.classList.add(localStorage.getItem("theme") || "dark")`,
+        }} />
+      </head>
+      <body className="antialiased">{children}</body>
     </html>
   )
 }
