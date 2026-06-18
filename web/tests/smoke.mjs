@@ -50,15 +50,17 @@ async function main() {
     if (res.status !== 200) throw new Error(`Status ${res.status}`)
   })
 
-  await test("POST /api/chat returns response", async () => {
+  await test("POST /api/chat returns response (streaming)", async () => {
     const res = await fetch(`${BASE}/api/chat`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ query: "Dime un dato sobre Messi", mode: "general", history: [] }),
     })
     if (res.status !== 200) throw new Error(`Status ${res.status}`)
-    const data = await res.json()
-    if (!data.response) throw new Error("No response field")
+    const ct = res.headers.get("content-type") || ""
+    if (!ct.includes("text/plain")) throw new Error(`Expected text/plain, got ${ct}`)
+    const text = await res.text()
+    if (!text || text.length < 10) throw new Error("Response too short")
   })
 
   console.log(`\n${process.exitCode ? "⚠️  Some tests failed" : "✅ All tests passed"}\n`)

@@ -29,6 +29,23 @@
     "you": "Tú",
     "agent": "Football Genius AI",
     "detener": "Detener",
-    "leer": "Leer"
+    "leer": "Leer",
+    "signIn": "Iniciar sesión",
+    "signOut": "Cerrar sesión",
+    "signInDesc": "Tus conversaciones se guardarán en tu cuenta. Sin anuncios, sin spam.",
+    "history": "Historial",
+    "searchHistory": "Buscar conversaciones...",
+    "noHistory": "No hay conversaciones",
+    "noResults": "Sin resultados",
+    "signInForHistory": "Inicia sesión para guardar tu historial",
+    "rename": "Renombrar",
+    "delete": "Eliminar",
+    "live": "En Vivo",
+    "news": "Noticias",
+    "matches": "Partidos",
+    "noNews": "No hay noticias disponibles",
+    "noMatches": "No hay partidos recientes",
+    "refresh": "Actualizar",
+    "updated": "Actualizado"
   }
 }

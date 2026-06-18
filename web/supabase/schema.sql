@@ -55,14 +55,27 @@ CREATE TABLE IF NOT EXISTS competitions (
 CREATE TABLE IF NOT EXISTS conversations (
   id BIGSERIAL PRIMARY KEY,
   session_id TEXT NOT NULL,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
   role TEXT NOT NULL,
   content TEXT NOT NULL,
   mode TEXT DEFAULT 'general',
-  language TEXT DEFAULT 'es',
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_conversations_session ON conversations(session_id);
+CREATE INDEX IF NOT EXISTS idx_conversations_user ON conversations(user_id);
 CREATE INDEX IF NOT EXISTS idx_players_name ON players(name);
 CREATE INDEX IF NOT EXISTS idx_teams_name ON teams(name);
 CREATE INDEX IF NOT EXISTS idx_players_nationality ON players(nationality);
+
+CREATE TABLE IF NOT EXISTS chat_sessions (
+  session_id TEXT PRIMARY KEY,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  title TEXT NOT NULL DEFAULT 'New Chat',
+  mode TEXT DEFAULT 'general',
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_chat_sessions_user ON chat_sessions(user_id);
+CREATE INDEX IF NOT EXISTS idx_chat_sessions_updated ON chat_sessions(updated_at DESC);

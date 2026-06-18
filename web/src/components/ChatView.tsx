@@ -54,7 +54,12 @@ export default function ChatView({
         {messages.map((msg, i) => (
           <div key={i} className={`message-enter flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
             <div className={`max-w-[88%] sm:max-w-[72%] rounded-2xl px-4 py-3 ${msg.role === "user" ? "bg-amber-500/10 border border-amber-500/20 text-text-primary rounded-br-sm" : "bg-gray-900/50 border border-gray-800/50 text-gray-300 rounded-bl-sm"}`}>
-              <div className="text-sm leading-relaxed whitespace-pre-wrap">{msg.content}</div>
+              <div className="text-sm leading-relaxed whitespace-pre-wrap">
+                {msg.content}
+                {msg.role === "assistant" && loading && i === messages.length - 1 && (
+                  <span className="inline-block w-[2px] h-[1em] ml-0.5 bg-amber-400 animate-blink align-text-bottom" />
+                )}
+              </div>
               <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-800/50">
                 {msg.role === "assistant" ? (
                   <div className="text-[10px] text-gray-600 flex items-center gap-1">
@@ -85,7 +90,7 @@ export default function ChatView({
             </div>
           </div>
         ))}
-        {loading && (
+        {loading && (messages.length === 0 || messages[messages.length - 1].role !== "assistant") && (
           <div className="flex justify-start message-enter">
             <div className="bg-gray-900/50 border border-gray-800/50 rounded-2xl rounded-bl-sm px-4 py-3.5">
               <div className="typing-indicator"><span></span><span></span><span></span></div>

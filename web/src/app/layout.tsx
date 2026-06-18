@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import AnalyticsWrapper from "@/components/AnalyticsWrapper"
+import AuthWrapper from "@/components/AuthWrapper"
 import "./globals.css"
 
 export const metadata: Metadata = {
@@ -18,7 +19,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className="antialiased">
-        {children}
+        <AuthWrapper>{children}</AuthWrapper>
         <AnalyticsWrapper />
       </body>
     </html>

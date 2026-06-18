@@ -1,5 +1,6 @@
 import { Message, Mode } from "./types"
 import { supabase } from "./supabase"
+import { fetchLiveContext } from "./live-data"
 
 const CTX_FOOTER = "\n\nTienes acceso a una base de datos con más de 40 jugadores históricos y actuales (Messi, Cristiano, Mbappé, Haaland, etc.), 25+ equipos top (Real Madrid, Barça, City, etc.), y 11 competiciones. Úsala para respaldar tus respuestas con datos reales. Si te preguntan por un jugador o equipo específico, responde con datos concretos: estadísticas, palmarés, estilo de juego."
 
@@ -18,20 +19,23 @@ const SYSTEM_PROMPTS: Record<Mode, string> = {
   talent_detector: "Eres un DETECTOR DE TALENTO. Identifica jóvenes promesas, joyas ocultas, mercados emergentes. Incluye contexto, proyección, comparación con establecidos." + CTX_FOOTER,
 }
 
+async function buildMessagesWithLive(query: string, mode: Mode, history: { role: "user" | "assistant"; content: string }[]) {
+  const systemPrompt = SYSTEM_PROMPTS[mode]
+  const liveCtx = await fetchLiveContext()
+  return [
+    { role: "system", content: systemPrompt + liveCtx },
+    ...history.slice(-10).filter(m => m.content?.trim()).map(m => ({ role: m.role as "user" | "assistant", content: m.content })),
+    { role: "user", content: query },
+  ]
+}
+
 export async function askAgent(
   query: string,
   mode: Mode,
   history: { role: "user" | "assistant"; content: string }[],
   origin?: string
 ): Promise<string> {
-  const systemPrompt = SYSTEM_PROMPTS[mode]
-
-  const messages = [
-    { role: "system", content: systemPrompt },
-    ...history.slice(-10).filter(m => m.content?.trim()).map(m => ({ role: m.role as "user" | "assistant", content: m.content })),
-    { role: "user", content: query },
-  ]
-
+  const messages = await buildMessagesWithLive(query, mode, history)
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), 30000)
 
@@ -62,4 +66,68 @@ export async function askAgent(
   } finally {
     clearTimeout(timeout)
   }
+}
+
+export async function askAgentStream(
+  query: string,
+  mode: Mode,
+  history: { role: "user" | "assistant"; content: string }[],
+  origin?: string
+): Promise<ReadableStream<string>> {
+  const messages = await buildMessagesWithLive(query, mode, history)
+
+  const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+      "HTTP-Referer": origin || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+    },
+    body: JSON.stringify({
+      model: "openrouter/free",
+      messages,
+      max_tokens: 1500,
+      temperature: 0.7,
+      stream: true,
+    }),
+  })
+
+  if (!res.ok) {
+    const err = await res.text()
+    throw new Error(`OpenRouter ${res.status}: ${err}`)
+  }
+
+  let buffer = ""
+  const reader = res.body!.getReader()
+  const decoder = new TextDecoder()
+
+  return new ReadableStream<string>({
+    async start(controller) {
+      try {
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done) break
+          buffer += decoder.decode(value, { stream: true })
+
+          const lines = buffer.split("\n")
+          buffer = lines.pop() || ""
+
+          for (const line of lines) {
+            const trimmed = line.trim()
+            if (!trimmed || !trimmed.startsWith("data: ")) continue
+            const data = trimmed.slice(6)
+            if (data === "[DONE]") continue
+            try {
+              const parsed = JSON.parse(data)
+              const content = parsed.choices?.[0]?.delta?.content
+              if (content) controller.enqueue(content)
+            } catch {}
+          }
+        }
+        controller.close()
+      } catch (e) {
+        controller.error(e)
+      }
+    },
+  })
 }

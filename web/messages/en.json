@@ -29,6 +29,23 @@
     "you": "You",
     "agent": "Football Genius AI",
     "detener": "Stop",
-    "leer": "Read"
+    "leer": "Read",
+    "signIn": "Sign in",
+    "signOut": "Sign out",
+    "signInDesc": "Your conversations will be saved to your account. No ads, no spam.",
+    "history": "History",
+    "searchHistory": "Search conversations...",
+    "noHistory": "No conversations yet",
+    "noResults": "No results",
+    "signInForHistory": "Sign in to save your history",
+    "rename": "Rename",
+    "delete": "Delete",
+    "live": "Live",
+    "news": "News",
+    "matches": "Matches",
+    "noNews": "No news available",
+    "noMatches": "No recent matches",
+    "refresh": "Refresh",
+    "updated": "Updated"
   }
 }
