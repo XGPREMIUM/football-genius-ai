@@ -14,7 +14,7 @@ const ChatView = lazy(() => import("@/components/ChatView"))
 const HistorySidebar = lazy(() => import("@/components/HistorySidebar"))
 const LiveFeed = lazy(() => import("@/components/LiveFeed"))
 
-const NAV_MODES = ["general", "scout", "tactical", "goat", "encyclopedia", "coach", "transfer_market"] as Mode[]
+const NAV_MODES = ["general", "scout", "tactical", "goat", "encyclopedia", "coach", "transfer_market", "fantasy_manager", "referee"] as Mode[]
 
 const MODE_META: Record<Mode, { icon: string; gradient: string }> = {
   general: { icon: "🎙️", gradient: "from-amber-400 to-yellow-500" },
@@ -29,6 +29,8 @@ const MODE_META: Record<Mode, { icon: string; gradient: string }> = {
   content_creator: { icon: "🎬", gradient: "from-pink-400 to-rose-500" },
   coach: { icon: "🧠", gradient: "from-emerald-400 to-teal-500" },
   talent_detector: { icon: "🌟", gradient: "from-yellow-400 to-amber-500" },
+  fantasy_manager: { icon: "🎩", gradient: "from-indigo-400 to-purple-500" },
+  referee: { icon: "🟨", gradient: "from-yellow-400 to-red-500" },
 }
 
 export default function Home() {
@@ -215,9 +217,10 @@ export default function Home() {
     speechSynthesis.speak(utterance)
   }, [locale, speakingId])
 
-  const handleSend = async () => {
-    if (!input.trim() || loading) return
-    const userMsg: Message = { role: "user", content: input.trim(), mode }
+  const handleSend = async (customInput?: string) => {
+    const textToSend = typeof customInput === "string" ? customInput : input
+    if (!textToSend.trim() || loading) return
+    const userMsg: Message = { role: "user", content: textToSend.trim(), mode }
     setMessages(p => [...p, userMsg])
     saveMessage(userMsg)
     if (messages.length === 0) ensureSession(userMsg.content)

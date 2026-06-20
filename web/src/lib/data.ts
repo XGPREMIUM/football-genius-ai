@@ -11,4 +11,6 @@ export const MODES = [
   { id: "content_creator", icon: "🎬", name: "Contenido", description: "Posts, hilos, guiones" },
   { id: "coach", icon: "🧠", name: "Coach", description: "Sesiones y planificaciones" },
   { id: "talent_detector", icon: "🌟", name: "Talento", description: "Jóvenes promesas y joyas ocultas" },
+  { id: "fantasy_manager", icon: "🎩", name: "Fantasy Manager", description: "Recomendaciones y alineaciones para Fantasy" },
+  { id: "referee", icon: "🟨", name: "Árbitro IA", description: "Reglas, decisiones VAR y polémica" },
 ] as const

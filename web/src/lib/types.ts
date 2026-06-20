@@ -60,6 +60,8 @@ export type Mode =
   | "content_creator" 
   | "coach" 
   | "talent_detector"
+  | "fantasy_manager"
+  | "referee"
 
 export interface ModeInfo {
   id: Mode

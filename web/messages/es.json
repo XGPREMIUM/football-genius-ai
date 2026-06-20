@@ -10,7 +10,7 @@
     "followUp": "Sigue preguntando...",
     "newChat": "Nuevo análisis",
     "stats": ["Jugadores", "Equipos", "Modos"],
-    "nav": ["General", "Scout", "Táctico", "GOAT", "Enciclopedia", "Coach", "Mercado"],
+    "nav": ["General", "Scout", "Táctico", "GOAT", "Enciclopedia", "Coach", "Mercado", "Fantasy", "Árbitro"],
     "listening": "Escuchando...",
     "speak": "Leer",
     "stop": "Detener",

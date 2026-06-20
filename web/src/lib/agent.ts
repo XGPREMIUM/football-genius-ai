@@ -17,13 +17,76 @@ const SYSTEM_PROMPTS: Record<Mode, string> = {
   content_creator: "Eres un CREADOR DE CONTENIDOS. Genera contenido para artículos, podcasts, YouTube, Shorts, Reels, X, LinkedIn, newsletter. Adapta formato al medio." + CTX_FOOTER,
   coach: "Eres un ENTRENADOR. Diseña sesiones, ejercicios, microciclos, planificaciones. Adapta al nivel: base, amateur, semiprofesional, profesional." + CTX_FOOTER,
   talent_detector: "Eres un DETECTOR DE TALENTO. Identifica jóvenes promesas, joyas ocultas, mercados emergentes. Incluye contexto, proyección, comparación con establecidos." + CTX_FOOTER,
+  fantasy_manager: "Eres un ASESOR DE FANTASY FOOTBALL (Biwenger, Comunio, LaLiga Fantasy, FPL). Analiza: estado de forma, precio, recomendación de fichar/vender (Chollo, Apuesta, Evitar), puntuación esperada, consejos de capitanía y alineación." + CTX_FOOTER,
+  referee: "Eres un ÁRBITRO DE ÉLITE e instructor VAR. Analiza jugadas polémicas, tarjetas, penaltis, fueras de juego y decisiones del VAR basándote en las Reglas de Juego de la IFAB vigentes. Sé neutral, objetivo y didáctico." + CTX_FOOTER,
+}
+
+async function fetchDbContext(query: string): Promise<string> {
+  const words = query
+    .toLowerCase()
+    .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?"']/g, "")
+    .split(/\s+/)
+    .filter(w => w.length >= 3)
+
+  if (words.length === 0) return ""
+
+  try {
+    const playerPromises = words.map(word => 
+      supabase.from("players").select("*").or(`name.ilike.%${word}%,full_name.ilike.%${word}%`).limit(2)
+    )
+    const teamPromises = words.map(word => 
+      supabase.from("teams").select("*").or(`name.ilike.%${word}%,full_name.ilike.%${word}%`).limit(2)
+    )
+
+    const playerResults = await Promise.allSettled(playerPromises)
+    const teamResults = await Promise.allSettled(teamPromises)
+
+    const uniquePlayers = new Map<string, any>()
+    const uniqueTeams = new Map<string, any>()
+
+    for (const res of playerResults) {
+      if (res.status === "fulfilled" && res.value.data) {
+        res.value.data.forEach(p => uniquePlayers.set(p.id, p))
+      }
+    }
+
+    for (const res of teamResults) {
+      if (res.status === "fulfilled" && res.value.data) {
+        res.value.data.forEach(t => uniqueTeams.set(t.id, t))
+      }
+    }
+
+    let ctx = ""
+    if (uniquePlayers.size > 0) {
+      ctx += "\n\n--- DATOS DE JUGADORES ENCONTRADOS EN LA BD ---\n"
+      Array.from(uniquePlayers.values()).slice(0, 4).forEach(p => {
+        ctx += `- ${p.full_name} (${p.nationality}, ${p.position}): Club actual: ${p.current_club || "Ninguno"}. Goles carrera: ${p.career_goals || 0}, Asistencias: ${p.career_assists || 0}, Balones de Oro: ${p.ballon_dors || 0}, Champions: ${p.champions_league || 0}, Mundial: ${p.world_cups || 0}. Valor de mercado: ${p.market_value || "N/A"}.\n  Estilo de juego: ${p.playing_style || ""}\n  Fortalezas: ${p.strengths || ""}\n`
+      })
+    }
+
+    if (uniqueTeams.size > 0) {
+      ctx += "\n\n--- DATOS DE EQUIPOS ENCONTRADOS EN LA BD ---\n"
+      Array.from(uniqueTeams.values()).slice(0, 4).forEach(t => {
+        ctx += `- ${t.full_name} (País: ${t.country}): Estadio: ${t.stadium || "N/A"} (Capacidad: ${t.stadium_capacity || 0}). Fundado en: ${t.founded_year || "N/A"}. Entrenador: ${t.manager || "N/A"}. Títulos nacionales: ${t.titles_domestic || 0}, Títulos internacionales: ${t.titles_international || 0}.\n  Descripción: ${t.description || ""}\n`
+      })
+    }
+
+    return ctx
+  } catch (error) {
+    console.error("Error fetching db context:", error)
+    return ""
+  }
 }
 
 async function buildMessagesWithLive(query: string, mode: Mode, history: { role: "user" | "assistant"; content: string }[]) {
   const systemPrompt = SYSTEM_PROMPTS[mode]
   const liveCtx = await fetchLiveContext()
+  const dbCtx = await fetchDbContext(query)
+
+  const suggestionInstruction = "\n\nIMPORTANTE: Al final de tu respuesta, obligatoriamente genera exactamente 3 preguntas sugeridas de seguimiento que sean interesantes, realistas y relacionadas con la consulta. Debes usar exactamente este formato en una línea al final (sin negritas ni prefijos extra): [SUGERENCIAS] Pregunta 1 | Pregunta 2 | Pregunta 3"
+
   return [
-    { role: "system", content: systemPrompt + liveCtx },
+    { role: "system", content: systemPrompt + liveCtx + dbCtx + suggestionInstruction },
     ...history.slice(-10).filter(m => m.content?.trim()).map(m => ({ role: m.role as "user" | "assistant", content: m.content })),
     { role: "user", content: query },
   ]
@@ -48,9 +111,9 @@ export async function askAgent(
         "HTTP-Referer": origin || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
       },
       body: JSON.stringify({
-        model: "openrouter/free",
+        model: "google/gemini-2.5-flash",
         messages,
-        max_tokens: 1500,
+        max_tokens: 2500,
         temperature: 0.7,
       }),
       signal: controller.signal,
@@ -84,9 +147,9 @@ export async function askAgentStream(
       "HTTP-Referer": origin || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
     },
     body: JSON.stringify({
-      model: "openrouter/free",
+      model: "google/gemini-2.5-flash",
       messages,
-      max_tokens: 1500,
+      max_tokens: 2500,
       temperature: 0.7,
       stream: true,
     }),

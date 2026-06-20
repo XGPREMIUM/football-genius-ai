@@ -10,7 +10,7 @@
     "followUp": "Keep asking...",
     "newChat": "New analysis",
     "stats": ["Players", "Teams", "Modes"],
-    "nav": ["General", "Scout", "Tactical", "GOAT", "Encyclopedia", "Coach", "Market"],
+    "nav": ["General", "Scout", "Tactical", "GOAT", "Encyclopedia", "Coach", "Market", "Fantasy", "Referee"],
     "listening": "Listening...",
     "speak": "Read",
     "stop": "Stop",
