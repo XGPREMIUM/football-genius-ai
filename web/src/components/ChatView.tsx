@@ -7,6 +7,7 @@ import type { Message, Mode } from "@/lib/types"
 import Toast, { showToast } from "@/components/Toast"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
+import PlayerCard from "./PlayerCard"
 
 const MODE_META: Record<Mode, { icon: string; gradient: string }> = {
   general: { icon: "🎙️", gradient: "from-amber-400 to-yellow-500" },
@@ -37,7 +38,19 @@ function parseMessageContent(content: string) {
       .map(s => s.trim())
       .filter(s => s.length > 0)
   }
-  return { mainContent, suggestions }
+
+  const cardMatch = mainContent.match(/\[PLAYER_CARD:\s*([a-zA-Z0-9_-]+)\]/i)
+  let playerCards: string[] = []
+  if (cardMatch) {
+    const regex = /\[PLAYER_CARD:\s*([a-zA-Z0-9_-]+)\]/gi
+    let m
+    while ((m = regex.exec(mainContent)) !== null) {
+      playerCards.push(m[1])
+    }
+    mainContent = mainContent.replace(/\[PLAYER_CARD:\s*[a-zA-Z0-9_-]+\]/gi, "").trim()
+  }
+
+  return { mainContent, suggestions, playerCards }
 }
 
 export default function ChatView({
@@ -123,6 +136,14 @@ export default function ChatView({
                     <span className="inline-block w-[2px] h-[1em] ml-0.5 bg-amber-400 animate-blink align-text-bottom" />
                   )}
                 </div>
+
+                {msg.role === "assistant" && parsed.playerCards && parsed.playerCards.length > 0 && (
+                  <div className="space-y-3 mt-3 border-t border-gray-800/40 pt-3">
+                    {parsed.playerCards.map((cardId) => (
+                      <PlayerCard key={cardId} playerId={cardId} t={t} />
+                    ))}
+                  </div>
+                )}
 
                 {/* Suggested questions inside the last assistant bubble */}
                 {msg.role === "assistant" && i === messages.length - 1 && parsed.suggestions.length > 0 && (

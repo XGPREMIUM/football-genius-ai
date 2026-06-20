@@ -60,7 +60,7 @@ async function fetchDbContext(query: string): Promise<string> {
     if (uniquePlayers.size > 0) {
       ctx += "\n\n--- DATOS DE JUGADORES ENCONTRADOS EN LA BD ---\n"
       Array.from(uniquePlayers.values()).slice(0, 4).forEach(p => {
-        ctx += `- ${p.full_name} (${p.nationality}, ${p.position}): Club actual: ${p.current_club || "Ninguno"}. Goles carrera: ${p.career_goals || 0}, Asistencias: ${p.career_assists || 0}, Balones de Oro: ${p.ballon_dors || 0}, Champions: ${p.champions_league || 0}, Mundial: ${p.world_cups || 0}. Valor de mercado: ${p.market_value || "N/A"}.\n  Estilo de juego: ${p.playing_style || ""}\n  Fortalezas: ${p.strengths || ""}\n`
+        ctx += `- ID del Jugador: "${p.id}". Nombre: ${p.full_name} (${p.nationality}, ${p.position}). Club actual: ${p.current_club || "Ninguno"}. Goles carrera: ${p.career_goals || 0}, Asistencias: ${p.career_assists || 0}, Balones de Oro: ${p.ballon_dors || 0}, Champions: ${p.champions_league || 0}, Mundial: ${p.world_cups || 0}. Valor de mercado: ${p.market_value || "N/A"}.\n  Estilo de juego: ${p.playing_style || ""}\n  Fortalezas: ${p.strengths || ""}\n`
       })
     }
 
@@ -83,10 +83,12 @@ async function buildMessagesWithLive(query: string, mode: Mode, history: { role:
   const liveCtx = await fetchLiveContext()
   const dbCtx = await fetchDbContext(query)
 
+  const cardInstruction = "\n\nIMPORTANTE: Si el usuario te pregunta sobre un jugador específico y sus datos están presentes en los DATOS DE JUGADORES ENCONTRADOS EN LA BD, al final de tu respuesta de texto (pero antes del bloque de [SUGERENCIAS]) debes escribir exactamente la etiqueta `[PLAYER_CARD: id_del_jugador]` usando el ID del Jugador indicado (por ejemplo: `[PLAYER_CARD: messi]`). Nunca inventes el ID; usa solo los provistos en la BD. Esto renderizará su ficha técnica y gráfico de radar."
+
   const suggestionInstruction = "\n\nIMPORTANTE: Al final de tu respuesta, obligatoriamente genera exactamente 3 preguntas sugeridas de seguimiento que sean interesantes, realistas y relacionadas con la consulta. Debes usar exactamente este formato en una línea al final (sin negritas ni prefijos extra): [SUGERENCIAS] Pregunta 1 | Pregunta 2 | Pregunta 3"
 
   return [
-    { role: "system", content: systemPrompt + liveCtx + dbCtx + suggestionInstruction },
+    { role: "system", content: systemPrompt + liveCtx + dbCtx + cardInstruction + suggestionInstruction },
     ...history.slice(-10).filter(m => m.content?.trim()).map(m => ({ role: m.role as "user" | "assistant", content: m.content })),
     { role: "user", content: query },
   ]
