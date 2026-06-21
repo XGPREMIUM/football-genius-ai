@@ -9,6 +9,9 @@ import Toast, { showToast } from "@/components/Toast"
 import type { Message, Mode } from "@/lib/types"
 import { supabase } from "@/lib/supabase"
 import { useAuth } from "@/lib/auth-context"
+import { fetchProgress } from "@/lib/gamification"
+import LevelBadge from "@/components/LevelBadge"
+import TriviaPortal from "@/components/TriviaPortal"
 
 const ChatView = lazy(() => import("@/components/ChatView"))
 const HistorySidebar = lazy(() => import("@/components/HistorySidebar"))
@@ -59,6 +62,20 @@ export default function Home() {
   const [authError, setAuthError] = useState("")
   const [historyOpen, setHistoryOpen] = useState(false)
   const [liveOpen, setLiveOpen] = useState(false)
+
+  // Gamification state
+  const [xp, setXp] = useState(0)
+  const [level, setLevel] = useState(1)
+  const [userTitle, setUserTitle] = useState("Aficionado de Sillón 📺")
+  const [triviaOpen, setTriviaOpen] = useState(false)
+
+  useEffect(() => {
+    fetchProgress(user?.id).then(prog => {
+      setXp(prog.xp)
+      setLevel(prog.level)
+      setUserTitle(prog.title)
+    })
+  }, [user?.id])
 
   useEffect(() => {
     let sid = localStorage.getItem("session_id")
@@ -369,6 +386,18 @@ export default function Home() {
               ))}
             </nav>
             <div className="flex items-center gap-2 ml-auto">
+              {/* Gamification progress badge */}
+              <LevelBadge xp={xp} level={level} title={userTitle} />
+
+              {/* Trivia Academy button */}
+              <button 
+                onClick={() => setTriviaOpen(true)} 
+                className="p-1.5 rounded-lg text-xs bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20 transition-all font-semibold flex items-center gap-1.5"
+                title="Academia de Trivia"
+              >
+                🎓 <span className="hidden sm:inline">Trivia</span>
+              </button>
+
               {/* Auth */}
               {!authLoading && (
                 user ? (
@@ -527,7 +556,8 @@ export default function Home() {
 
       {/* Floating Agent */}
       <button onClick={() => { if (!showChat) { setShowChat(true) } else { inputRef.current?.focus() } }}
-        className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-gradient-to-br from-amber-500 to-yellow-600 shadow-2xl shadow-amber-500/30 flex items-center justify-center hover:scale-110 active:scale-95 transition-all group">
+        className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-gradient-to-br from-amber-500 to-yellow-600 shadow-2xl shadow-amber-500/30 flex items-center justify-center hover:scale-110 active:scale-95 transition-all group"
+        title="Chat">
         <div className="relative">
           <span className="text-2xl">🤖</span>
           <span className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-500 rounded-full border-2 border-gray-950">
@@ -535,6 +565,18 @@ export default function Home() {
           </span>
         </div>
       </button>
+
+      {/* Trivia Portal Modal */}
+      <TriviaPortal
+        isOpen={triviaOpen}
+        onClose={() => setTriviaOpen(false)}
+        userId={user?.id}
+        onProgressUpdate={(newXp, newLevel, newTitle) => {
+          setXp(newXp)
+          setLevel(newLevel)
+          setUserTitle(newTitle)
+        }}
+      />
     </div>
   )
 }
